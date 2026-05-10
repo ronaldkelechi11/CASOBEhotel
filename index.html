@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CASOBE BEACH RESORT — Laiya, Batangas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --sand: #f4ede3;
+  --sand-mid: #e8ddd0;
+  --bark: #3a2e24;
+  --bark-light: #6b5a48;
+  --ocean: #3b7d6e;
+  --ocean-light: #5aa898;
+  --white: #fdfaf7;
+  --text: #2a1f18;
+  --muted: #8a7a6c;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--white);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+.hero {
+  position: relative;
+  height: 100vh;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  background: url('bgimgfordesktopview.jpg') center/cover no-repeat;
+}
+
+.hero video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  display: none;
+  z-index: 0;
+}
+
+@media (max-width: 1024px) {
+  .hero {
+    background: none;
+  }
+
+  .hero video {
+    display: block;
+  }
+}
+
+@media (orientation: landscape) {
+  .hero video { object-position: center 30%; }
+}
+
+.hero-img-fallback {
+  position: absolute;
+  inset: 0;
+  background: url('bgimgfordesktopview.jpg') center/cover no-repeat;
+  z-index: -1;
+}
+
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(15,25,20,0.82) 0%,
+    rgba(15,25,20,0.3) 55%,
+    rgba(15,25,20,0.1) 100%
+  );
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 0 6vw 7vh;
+  max-width: 900px;
+}
+
+.hero-eyebrow {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(244,237,227,0.65);
+  margin-bottom: 14px;
+}
+
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 400;
+  font-size: clamp(44px, 7.5vw, 88px);
+  line-height: 1.0;
+  color: #f4ede3;
+  margin-bottom: 22px;
+}
+
+.hero-title em {
+  font-style: italic;
+  display: block;
+}
+
+.hero-tagline {
+  font-size: 14px;
+  font-weight: 300;
+  color: rgba(244,237,227,0.65);
+  letter-spacing: 0.05em;
+  max-width: 420px;
+  line-height: 1.7;
+}
+
+.hero-scroll {
+  position: absolute;
+  bottom: 36px;
+  right: 6vw;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(244,237,227,0.45);
+}
+
+.hero-scroll-line {
+  width: 48px;
+  height: 1px;
+  background: rgba(244,237,227,0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-scroll-line::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: rgba(244,237,227,0.8);
+  animation: scanline 2.2s ease-in-out infinite;
+}
+
+@keyframes scanline {
+  0% { left:-100%; } 100% { left:100%; }
+}
+
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 22px 6vw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.4s, padding 0.4s;
+}
+
+nav.scrolled {
+  background: rgba(10,20,16,0.92);
+  backdrop-filter: blur(8px);
+  padding: 14px 6vw;
+}
+
+.nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  color: #f4ede3;
+  letter-spacing: 0.03em;
+}
+
+.nav-book {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #f4ede3;
+  border: 1px solid rgba(244,237,227,0.4);
+  padding: 9px 22px;
+  border-radius: 40px;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.nav-book:hover {
+  background: rgba(244,237,227,0.1);
+  border-color: rgba(244,237,227,0.7);
+}
+
+/* ── INTRO STRIP ─────────────────────── */
+.intro-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border-top: 1px solid var(--sand-mid);
+}
+
+@media (max-width: 640px) { .intro-strip { grid-template-columns: 1fr; } }
+
+.intro-block {
+  padding: 52px 6vw;
+  border-right: 1px solid var(--sand-mid);
+}
+
+.intro-block:last-child { border-right: none; }
+
+.intro-block h2 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 400;
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.25;
+  margin-bottom: 14px;
+  color: var(--bark);
+}
+
+.intro-block p {
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.75;
+  color: var(--bark-light);
+  max-width: 360px;
+}
+
+/* ── ROOMS SECTION ───────────────────── */
+.rooms-section {
+  padding: 80px 6vw;
+  background: var(--white);
+}
+
+.section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 48px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.section-kicker {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ocean);
+  margin-bottom: 8px;
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-weight: 400;
+  font-size: clamp(26px, 4vw, 38px);
+  color: var(--bark);
+  line-height: 1.1;
+}
+
+.tier-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 52px 0 28px;
+}
+
+.tier-divider::before, .tier-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--sand-mid);
+}
+
+.tier-divider span {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.room-card {
+  background: var(--white);
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 28px;
+  border: 1px solid rgba(58,46,36,0.09);
+  box-shadow: 0 18px 40px rgba(15,25,20,0.05);
+  transform: translateY(0);
+  transition: transform 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
+}
+
+.room-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 26px 50px rgba(15,25,20,0.09);
+  background: #fcf7f0;
+}
+
+.room-thumb {
+  width: 100%;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  position: relative;
+  background: #c8bfb4;
+}
+
+.room-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease, filter 0.5s ease;
+}
+
+.room-card:hover .room-thumb img {
+  transform: scale(1.06);
+  filter: contrast(1.04) saturate(1.08);
+}
+
+/* placeholder when no image */
+.room-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #c8bfb4, #a89d90);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: rgba(58,46,36,0.45);
+  text-transform: uppercase;
+}
+
+.room-info {
+  padding: 26px 26px 28px;
+}
+
+.room-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--bark);
+  margin-bottom: 8px;
+}
+
+.room-pax {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 18px;
+  letter-spacing: 0.06em;
+}
+
+.room-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.room-price .from {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.room-price .amount {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  color: var(--ocean);
+  font-weight: 400;
+}
+
+.room-price .up-to {
+  font-size: 11px;
+  color: var(--muted);
+  margin-left: 4px;
+}
+
+.room-cta {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--bark-light);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid rgba(58,46,36,0.15);
+  transition: color 0.3s, border-color 0.3s, transform 0.3s;
+}
+
+.room-card:hover .room-cta {
+  color: var(--ocean);
+  border-color: var(--ocean);
+  transform: translateX(2px);
+}
+
+.room-cta svg {
+  width: 12px;
+  height: 12px;
+  transition: transform 0.3s;
+}
+
+.room-card:hover .room-cta svg {
+  transform: translateX(5px);
+}
+
+@keyframes card-pop {
+  from { opacity: 0; transform: translateY(24px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.room-card {
+  animation: card-pop 0.5s ease both;
+}
+
+.rooms-grid > .room-card:nth-child(1) { animation-delay: 0.05s; }
+.rooms-grid > .room-card:nth-child(2) { animation-delay: 0.10s; }
+.rooms-grid > .room-card:nth-child(3) { animation-delay: 0.15s; }
+.rooms-grid > .room-card:nth-child(4) { animation-delay: 0.18s; }
+.rooms-grid > .room-card:nth-child(5) { animation-delay: 0.22s; }
+.rooms-grid > .room-card:nth-child(6) { animation-delay: 0.26s; }
+.rooms-grid > .room-card:nth-child(7) { animation-delay: 0.30s; }
+.rooms-grid > .room-card:nth-child(8) { animation-delay: 0.34s; }
+
+@media (max-width: 900px) {
+  .rooms-grid { gap: 18px; }
+}
+
+@media (max-width: 640px) {
+  .room-info { padding: 20px 18px 22px; }
+}
+
+/* ── LIGHTBOX ────────────────────────── */
+.lightbox-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #050a07;
+  z-index: 1000;
+  flex-direction: column;
+}
+.lightbox-overlay.open { display: flex; }
+
+/* top bar — fixed height */
+.lightbox-header {
+  flex-shrink: 0;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  width: 100%;
+}
+.lightbox-room-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  color: #f4ede3;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lightbox-pax {
+  font-size: 11px;
+  color: rgba(244,237,227,0.4);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lightbox-close {
+  flex-shrink: 0;
+  margin-left: 12px;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: none;
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.lightbox-close:hover { background: rgba(255,255,255,0.1); }
+
+/* image area — fills ALL remaining vertical space */
+.lightbox-main {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-height: 0; /* critical for flex shrink */
+  background: #050a07;
+}
+.lightbox-main img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  transition: opacity 0.2s;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* arrows */
+.lb-arrow {
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  width: 40px; height: 40px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  font-size: 20px;
+  z-index: 2;
+  transition: background 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.lb-arrow:hover { background: rgba(59,125,110,0.65); }
+.lb-arrow.prev { left: 10px; }
+.lb-arrow.next { right: 10px; }
+
+.lightbox-counter {
+  position: absolute;
+  bottom: 10px; left: 50%; transform: translateX(-50%);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: rgba(255,255,255,0.3);
+  pointer-events: none;
+}
+
+/* thumbnail strip — fixed height at bottom */
+.lightbox-sidebar {
+  flex-shrink: 0;
+  height: 80px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  background: #050a07;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.lightbox-sidebar::-webkit-scrollbar { display: none; }
+
+.lb-thumb {
+  flex-shrink: 0;
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  opacity: 0.45;
+  cursor: pointer;
+  transition: opacity 0.2s, border-color 0.2s;
+}
+.lb-thumb:hover { opacity: 0.8; }
+.lb-thumb.active { opacity: 1; border-color: #3b7d6e; }
+
+/* desktop: right column for thumbs */
+@media (min-width: 860px) {
+  .lightbox-overlay { flex-direction: row; flex-wrap: wrap; }
+  .lightbox-header { width: 100%; }
+  .lightbox-main { flex: 1; border-right: 1px solid rgba(255,255,255,0.07); }
+  .lightbox-sidebar {
+    width: 120px;
+    height: 100%;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 12px 8px;
+    border-top: none;
+    gap: 8px;
+  }
+  .lb-thumb { width: 100%; height: 70px; }
+}
+
+/* ── BOOKING SECTION ─────────────────── */
+.booking-section {
+  background: var(--bark);
+  padding: 80px 6vw;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+@media (max-width: 700px) { .booking-section { grid-template-columns: 1fr; gap: 36px; } }
+
+.booking-left h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 400;
+  color: var(--sand);
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+
+.booking-left h2 em { font-style: italic; color: #8fcfc0; }
+
+.booking-left p {
+  font-size: 14px;
+  font-weight: 300;
+  color: rgba(244,237,227,0.55);
+  line-height: 1.75;
+  max-width: 380px;
+}
+
+.booking-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.booking-detail-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.detail-icon {
+  width: 36px; height: 36px;
+  border: 1px solid rgba(244,237,227,0.15);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  color: #8fcfc0;
+  font-size: 14px;
+}
+
+.detail-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(244,237,227,0.35);
+  margin-bottom: 2px;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: var(--sand);
+  font-weight: 300;
+}
+
+.detail-value a {
+  color: #8fcfc0;
+  text-decoration: none;
+}
+
+.detail-value a:hover { text-decoration: underline; }
+
+.book-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  background: #3b7d6e;
+  color: #f4ede3;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 14px 32px;
+  border-radius: 3px;
+  text-decoration: none;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  transition: background 0.2s;
+  width: fit-content;
+}
+
+.book-btn:hover { background: #5aa898; }
+
+/* ── FOOTER ──────────────────────────── */
+footer {
+  background: #0a1210;
+  padding: 28px 6vw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+footer .logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  color: rgba(244,237,227,0.4);
+}
+
+footer .copy {
+  font-size: 11px;
+  color: rgba(244,237,227,0.2);
+  letter-spacing: 0.08em;
+}
+
+/* ── FLOATING WHATSAPP BUTTON ─────────── */
+.wa-float {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.wa-promo-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ocean);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  padding: 11px 18px;
+  border-radius: 40px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba(59,125,110,0.35);
+  transition: background 0.2s, transform 0.2s;
+  white-space: nowrap;
+}
+.wa-promo-btn:hover { background: #2d6458; transform: translateY(-2px); }
+
+.wa-chat-btn {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: #25D366;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 20px rgba(37,211,102,0.4);
+  text-decoration: none;
+  transition: transform 0.2s, background 0.2s;
+  border: none;
+  cursor: pointer;
+}
+.wa-chat-btn:hover { transform: scale(1.08); background: #1ebe5c; }
+.wa-chat-btn svg { width: 28px; height: 28px; fill: #fff; }
+
+/* ── PROMOTIONS POPUP ─────────────────── */
+.promo-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(5,10,8,0.7);
+  backdrop-filter: blur(4px);
+  z-index: 600;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.promo-overlay.open { display: flex; }
+
+.promo-modal {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.3);
+}
+
+.promo-modal-head {
+  background: var(--ocean);
+  padding: 20px 22px 18px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.promo-modal-head-text .eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 4px;
+}
+
+.promo-modal-head-text h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.promo-close {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: none;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.promo-close:hover { background: rgba(255,255,255,0.15); }
+
+.promo-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.promo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(58,46,36,0.08);
+  background: var(--white);
+  text-decoration: none;
+  color: var(--text);
+  transition: background 0.2s, border-color 0.2s;
+  cursor: pointer;
+}
+.promo-item:hover { background: #f4ede3; border-color: rgba(59,125,110,0.25); }
+
+.promo-item-img {
+  width: 60px; height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #c8bfb4;
+}
+
+.promo-item-img-placeholder {
+  width: 60px; height: 48px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #c8bfb4, #a89d90);
+  flex-shrink: 0;
+}
+
+.promo-item-info { flex: 1; min-width: 0; }
+
+.promo-tier {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ocean);
+  margin-bottom: 2px;
+}
+
+.promo-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--bark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.promo-price {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.promo-price strong {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  color: var(--ocean);
+  font-weight: 400;
+}
+
+.promo-arrow {
+  color: var(--muted);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.promo-footer {
+  flex-shrink: 0;
+  padding: 14px 16px;
+  border-top: 1px solid var(--sand-mid);
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <span class="nav-logo">CASOBE BEACH RESORT</span>
+  <a href="https://wa.me/63XXXXXXXXXX?text=Hi!%20I%27d%20like%20to%20book%20a%20stay%20at%20Casobe%20Beach%20Resort." target="_blank" class="nav-book">Book a Stay</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+
+  <video autoplay muted loop playsinline poster="bgimgfordesktopview.jpg">
+    <source src="bgvideo_h264.mp4" type="video/mp4">
+  </video>
+
+  <div class="hero-img-fallback"></div>
+  <div class="hero-scrim"></div>
+
+  <div class="hero-content">
+    <p class="hero-eyebrow">Brgy. Sta. Ana, Calatagan, Batangas · Philippines</p>
+    <h1 class="hero-title">
+      CASOBE BEACH RESORT
+    </h1>
+    <p class="hero-tagline">A beachfront escape in Laiya — where the water is clear, the sand is quiet, and time moves differently.</p>
+  </div>
+
+  <div class="hero-scroll">
+    <div class="hero-scroll-line"></div>
+    Scroll
+  </div>
+</section>
+
+<!-- INTRO -->
+<div class="intro-strip">
+  <div class="intro-block">
+    <h2>Laiya's best-kept<br>beachfront secret</h2>
+    <p>Nestled on a pristine stretch of Batangas coastline, CASOBE BEACH RESORT offers intimate, nature-forward stays — from cosy cocoon pods to sprawling private villas with pool.</p>
+  </div>
+  <div class="intro-block">
+    <h2>Direct bookings,<br>no middlemen</h2>
+    <p>We believe the best experience starts before you arrive. Book directly with us for the best rates, flexible arrangements, and a personal welcome.</p>
+  </div>
+</div>
+
+<!-- ROOMS -->
+<section class="rooms-section">
+  <div class="section-header">
+    <div>
+      <p class="section-kicker">Accommodations</p>
+      <h2 class="section-title">Find your room</h2>
+    </div>
+  </div>
+
+  <!-- ── STANDARD ── -->
+  <div class="tier-divider"><span>Standard Rooms</span></div>
+  <div class="rooms-grid">
+
+    <!-- COCOON POD -->
+    <div class="room-card" onclick="openGallery('cocoon-pod')">
+      <div class="room-thumb">
+       
+        <div class="room-thumb-placeholder">Cocoon Pod</div>
+      </div>
+      <div class="room-info">
+        <p class="room-name">Cocoon Pod</p>
+        <p class="room-pax">Up to 2 guests</p>
+        <div class="room-bottom">
+          <div class="room-price">
+            <span class="from">From</span>
+            <span class="amount">₱3,500</span>
+            <span class="up-to">– ₱7,500</span>
+          </div>
+          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LUXURY COUPLES ROOM -->
+    <div class="room-card" onclick="openGallery('luxury-couples')">
+      <div class="room-thumb">
+      
+        <div class="room-thumb-placeholder">Luxury Couples Room</div>
+      </div>
+      <div class="room-info">
+        <p class="room-name">Luxury Couples Room</p>
+        <p class="room-pax">Up to 3 guests</p>
+        <div class="room-bottom">
+          <div class="room-price">
+            <span class="from">From</span>
+            <span class="amount">₱5,400</span>
+            <span class="up-to">– ₱10,800</span>
+          </div>
+          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- APOLLO AEROPOD -->
+    <div class="room-card" onclick="openGallery('apollo-aeropod')">
+      <div class="room-thumb">
+        
+        <div class="room-thumb-placeholder">Apollo Aeropod</div>
+      </div>
+      <div class="room-info">
+        <p class="room-name">Apollo Aeropod</p>
+        <p class="room-pax">Up to 4 guests</p>
+        <div class="room-bottom">
+          <div class="room-price">
+            <span class="from">From</span>
+            <span class="amount">₱4,000</span>
+            <span class="up-to">– ₱8,000</span>
+          </div>
+          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUPOLA -->
+    <div class="room-card" onclick="openGallery('cupola')">
+      <div class="room-thumb">
+       
+        <div class="room-thumb-placeholder">Cupola</div>
+      </div>
+      <div class="room-info">
+        <p class="room-name">Cupola</p>
+        <p class="room-pax">Up to 5 guests</p>
+        <div class="room-bottom">
+          <div class="room-price">
+            <span class="from">From</span>
+            <span class="amount">₱4,600</span>
+            <span class="up-to">– ₱9,200</span>
+          </div>
+          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BEACHFRONT CABIN -->
+    <div class="room-card" onclick="openGallery('beachfront-cabin')">
+      <div class="room-thumb">
+     
+        <div class="room-thumb-placeholder">Beachfront Cabin</div>
+      </div>
+      <div class="room-info">
+        <p class="room-name">Beachfront Cabin</p>
+        <p class="room-pax">Up to 6 guests</p>
+        <div class="room-bottom">
+          <div class="room-price">
+            <span class="from">From</span>
+            <span class="amount">₱5,700</span>
+            <span class="up-to">– ₱10,500</span>
+          </div>
+          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── PREMIUM ── -->
+  <div class="tier-divider"><span>Premium Rooms</span></div>
+  <div class="rooms-grid">
+
+    <!-- BEACH SUITE -->
+    <div class="room-card" onclick="openGallery('beach-suite')">
+      <div class="room-thumb">
+      
+        <div class="room-thumb-placeholder">Beach Suite</div>
+      </div>
+      <div class="room-info">
+        <p class="room-name">Beach Suite</p>
+        <p class="room-pax">8 – 10 guests</p>
+        <div class="room-bottom">
+          <div class="room-price">
+            <span class="from">From</span>
+            <span class="amount">₱6,400</span>
+            <span class="up-to">– ₱12,800</span>
+          </div>
+          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRIVATE VILLA -->
+    <div class="room-card" onclick="openGallery('private-villa')">
+      <div class="room-thumb">
+        
+        <div class="room-thumb-placeholder">Private Villa</div>
+      </div>
+      <div class="room-info">
+        <p class="room-name">Private Villa</p>
+        <p class="room-pax">12 – 14 guests</p>
+        <div class="room-bottom">
+          <div class="room-price">
+            <span class="from">From</span>
+            <span class="amount">₱7,000</span>
+            <span class="up-to">– ₱14,000</span>
+          </div>
+          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── LUXURY POOL VILLAS ── -->
+  <div class="tier-divider"><span>Luxury Pool Villas</span></div>
+  <div class="rooms-grid">
+
+    <!-- POOL VILLA 15 -->
+    <div class="room-card" onclick="openGallery('pool-villa-15')">
+      <div class="room-thumb">
+       
+        <div class="room-thumb-placeholder">Luxury Pool Villa</div>
+      </div>
+      <div class="room-info">
+        <p class="room-name">Luxury Pool Villa</p>
+        <p class="room-pax">Up to 15 guests</p>
+        <div class="room-bottom">
+          <div class="room-price">
+            <span class="from">From</span>
+            <span class="amount">₱12,500</span>
+            <span class="up-to">– ₱25,000</span>
+          </div>
+          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- POOL VILLA 20 -->
+    <div class="room-card" onclick="openGallery('pool-villa-20')">
+      <div class="room-thumb">
+      
+        <div class="room-thumb-placeholder">Grand Pool Villa</div>
+      </div>
+      <div class="room-info">
+        <p class="room-name">Grand Pool Villa</p>
+        <p class="room-pax">Up to 20 guests</p>
+        <div class="room-bottom">
+          <div class="room-price">
+            <span class="from">From</span>
+            <span class="amount">₱15,000</span>
+            <span class="up-to">– ₱30,000</span>
+          </div>
+          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- BOOKING -->
+<section class="booking-section">
+  <div class="booking-left">
+    <h2>Ready for your <em>Laiya escape?</em></h2>
+    <p>Book directly with us for the best rates and a personal welcome. We're always happy to arrange something special for groups, occasions, or extended stays.</p>
+  </div>
+  <div class="booking-details">
+    <div class="booking-detail-row">
+      <div class="detail-icon">✉</div>
+      <div>
+        <p class="detail-label">Email us</p>
+        <p class="detail-value"><a href="mailto:reservationlandcolifestyle@gmail.com">reservationlandcolifestyle@gmail.com</a></p>
+      </div>
+    </div>
+    <div class="booking-detail-row">
+      <div class="detail-icon">📍</div>
+      <div>
+        <p class="detail-label">Address</p>
+        <p class="detail-value">Brgy. Sta. Ana, Calatagan<br>Philippines 4111</p>
+      </div>
+    </div>
+    <a href="https://wa.me/63XXXXXXXXXX?text=Hi!%20I%27d%20like%20to%20book%20a%20stay%20at%20Casobe%20Beach%20Resort." target="_blank" class="book-btn">
+      💬 Chat on WhatsApp →
+    </a>
+  </div>
+</section>
+
+<footer>
+  <span class="logo">CASOBE BEACH RESORT</span>
+  <span class="copy">© 2026 · Laiya, Batangas, Philippines</span>
+</footer>
+
+<!-- ── LIGHTBOX ────────────────────────────────── -->
+<div class="lightbox-overlay" id="lightbox">
+  <div class="lightbox-header">
+    <div style="min-width:0">
+      <p class="lightbox-room-name" id="lb-room-name"></p>
+      <p class="lightbox-pax" id="lb-room-pax"></p>
+    </div>
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  </div>
+  <div class="lightbox-main">
+    <button class="lb-arrow prev" onclick="lbPrev()">‹</button>
+    <img id="lb-main-img" src="" alt="">
+    <button class="lb-arrow next" onclick="lbNext()">›</button>
+    <p class="lightbox-counter" id="lb-counter"></p>
+  </div>
+  <div class="lightbox-sidebar" id="lb-sidebar"></div>
+</div>
+
+<script>
+
+const ROOMS = {
+  'cocoon-pod': {
+    name: 'Cocoon Pod',
+    pax: 'Up to 2 guests · ₱3,500 – ₱7,500',
+    images: [
+      'rooms/cocoon-pod/5881b3b8-0be5-41e4-9cef-28dde42c983f.jpg',
+      'rooms/cocoon-pod/6399da98-1f98-4472-a569-65088cd35dbe.jpg',
+      'rooms/cocoon-pod/72e4636a-6f76-47b4-a867-8821790cf578.jpg',
+      'rooms/cocoon-pod/773c9e46-a3cf-4a24-83f6-2fdc9de14a8e.jpg',
+      'rooms/cocoon-pod/bd45c148-91c2-43f3-8659-c6c28945a11a.jpg',
+      'rooms/cocoon-pod/f401653b-c1b7-4343-8a69-c3eff25408a7.jpg',
+    ]
+  },
+  'luxury-couples': {
+    name: 'Luxury Couples Room',
+    pax: 'Up to 3 guests · ₱5,400 – ₱10,800',
+    images: [
+      'rooms/luxury-couples/1e6aea61-79ce-4bff-b6bc-fb586264e2b8.jpg',
+      'rooms/luxury-couples/63656287-62c1-4520-8066-4ce348bbac7b.jpg',
+      'rooms/luxury-couples/671801cf-289f-4d1f-b7fa-4f5e53ee2be9.jpg',
+      'rooms/luxury-couples/81ba5887-1a11-489b-8968-91c745b0fec6.jpg',
+      'rooms/luxury-couples/882bc45b-02d7-4d09-80ce-f553268ebf77.jpg',
+    ]
+  },
+  'apollo-aeropod': {
+    name: 'Apollo Aeropod',
+    pax: 'Up to 4 guests · ₱4,000 – ₱8,000',
+    images: [
+      'rooms/apollo-aeropod/0ce2e0c0-bd1c-4368-ba2c-a8e3a79647dd.jpg',
+      'rooms/apollo-aeropod/1ca797af-382d-47bb-ba38-bab43b685fc0.jpg',
+      'rooms/apollo-aeropod/29271a59-0c58-4909-ae37-0e872c8b9902.jpg',
+      'rooms/apollo-aeropod/3dc603eb-885b-4955-8fad-43ff54c45afa.jpg',
+      'rooms/apollo-aeropod/8c1e4350-1060-4773-a38b-aad6cc0f0006.jpg',
+      'rooms/apollo-aeropod/b776f2b8-5db8-4ba5-a428-e1ef52962f30.jpg',
+      'rooms/apollo-aeropod/ce27cace-a19f-4b58-a71d-ded7ecd27b41.jpg',
+      'rooms/apollo-aeropod/d79e9633-49a9-40d7-b677-7203e64e0724.jpg',
+      'rooms/apollo-aeropod/e22e7a9a-f254-4a7e-878a-fd100d4af3fa.jpg',
+      'rooms/apollo-aeropod/efc96a97-aa91-41e1-a613-adc4a0ac9cc0.jpg',
+      'rooms/apollo-aeropod/f8cfc6db-6c57-40e9-a6c1-faccde3e37ec.jpg',
+    ]
+  },
+  'cupola': {
+    name: 'Cupola',
+    pax: 'Up to 5 guests · ₱4,600 – ₱9,200',
+    images: [
+      'rooms/cupola/0df122de-45c5-48e3-ac42-64397e3e5584.jpg',
+      'rooms/cupola/3b5c54f2-ac92-4bc3-8e16-5cb64610da93.jpg',
+      'rooms/cupola/4db2dfcf-3cc9-422f-be7b-4a7f9be68676.jpg',
+      'rooms/cupola/616da742-fae8-4a85-9707-700846ce1e60.jpg',
+      'rooms/cupola/8e2680cf-85e7-415f-8f42-14decf890554(1).jpg',
+      'rooms/cupola/8e2680cf-85e7-415f-8f42-14decf890554.jpg',
+      'rooms/cupola/938fbe92-3a84-4eea-9fc4-ecb8c3cccc4b.jpg',
+      'rooms/cupola/a255d4fb-620b-4d05-af1d-164006ac73e6.jpg',
+      'rooms/cupola/d494063a-6c2d-4a81-bbf1-8708129f8f7c.jpg',
+      'rooms/cupola/e7f5389e-5f63-4d5e-9ff6-96e8b1ff24d1.jpg',
+    ]
+  },
+  'beachfront-cabin': {
+    name: 'Beachfront Cabin',
+    pax: 'Up to 6 guests · ₱5,700 – ₱10,500',
+    images: [
+      'rooms/beachfront-cabin/4a5948c6-cb61-438e-8119-4746d74409db.jpg',
+      'rooms/beachfront-cabin/669904eb-fe62-417b-8f09-617a70a98fd4.jpg',
+      'rooms/beachfront-cabin/6d60761e-75d6-4262-81a8-4b8cf04d9594.jpg',
+      'rooms/beachfront-cabin/7c4eb479-0093-49b1-a731-85d2f7d83e79.jpg',
+      'rooms/beachfront-cabin/b50e0a88-02a7-404a-84dd-b63595e16f1d.jpg',
+      'rooms/beachfront-cabin/cf4bb6b2-db47-4b5d-8282-5980d050db25.jpg',
+    ]
+  },
+  'beach-suite': {
+    name: 'Beach Suite',
+    pax: '8–10 guests · ₱6,400 – ₱12,800',
+    images: [
+      'rooms/beach-suite/231c6099-2f70-4b6a-8243-ec9b6f34cea9.jpg',
+      'rooms/beach-suite/4787cde9-0633-43ff-8b61-5b0e5f8c82c7.jpg',
+      'rooms/beach-suite/6bec9053-007f-4afc-a420-57129318eeaf.jpg',
+      'rooms/beach-suite/6dad2213-1571-4cca-be5f-bf5955f25d55.jpg',
+      'rooms/beach-suite/722153ff-cf04-48c8-82cf-fdabfd2bdfc6.jpg',
+      'rooms/beach-suite/90a4db0c-260f-406e-a68e-dc6df5830339.jpg',
+      'rooms/beach-suite/a2ab0a9a-c087-4d5e-8d82-b4c46bba1923.jpg',
+      'rooms/beach-suite/a97b6ed3-811a-4a62-b14a-80014eb76e06.jpg',
+    ]
+  },
+  'private-villa': {
+    name: 'Private Villa',
+    pax: '12–14 guests · ₱7,000 – ₱14,000',
+    images: [
+      'rooms/private-villa/278f2dcc-e5b1-4d19-a82f-a1d2e4f2fffe.jpg',
+      'rooms/private-villa/392ecd03-5a5f-4992-ac96-b91834f626cf.jpg',
+      'rooms/private-villa/704a7bae-e001-4199-8ee8-f9fe7db86f40.jpg',
+      'rooms/private-villa/801965fa-e44c-4b58-b29a-4c17a5a268e5.jpg',
+      'rooms/private-villa/92705ecf-6e2a-4130-8420-a67596b9e0ca.jpg',
+      'rooms/private-villa/aa747bf6-c6a0-4ef1-b29e-5e879e6942c1.jpg',
+      'rooms/private-villa/b906c95b-216d-4621-9641-7cb529c9b7fb.jpg',
+      'rooms/private-villa/c79d3a22-0da1-4ae1-9260-99494a3f50c7.jpg',
+      'rooms/private-villa/d30d5492-803d-47c1-bb26-810da71442fb.jpg',
+      'rooms/private-villa/f4724ddd-edd2-4b6e-9448-43dea541e0d1.jpg',
+      'rooms/private-villa/f5fd697f-0a74-49f2-8bfc-f31fdfa55616.jpg',
+    ]
+  },
+  'pool-villa-15': {
+    name: 'Luxury Pool Villa',
+    pax: 'Up to 15 guests · ₱12,500 – ₱25,000',
+    images: [
+      'rooms/luxury-pool-villa/05041000-f040-4870-a8e1-31a9f0425e8a.jpg',
+      'rooms/luxury-pool-villa/09799ab9-39fb-409c-b514-20f04b71d2cd.jpg',
+      'rooms/luxury-pool-villa/1a126c1f-0e06-4f26-888e-b2fc8d6b1b6e.jpg',
+      'rooms/luxury-pool-villa/1d818f79-276c-44b9-bf40-e01e202f43b0.jpg',
+      'rooms/luxury-pool-villa/27031544-6646-46c1-90d6-c1cbebd38d5c.jpg',
+      'rooms/luxury-pool-villa/4939c510-59f0-4cdd-846a-0f39e18069a1.jpg',
+      'rooms/luxury-pool-villa/533e8e58-e93c-443c-a422-3840dd5d7fab.jpg',
+      'rooms/luxury-pool-villa/6af5e277-7e30-4098-8a32-1f8fc83b8fec.jpg',
+      'rooms/luxury-pool-villa/75a46a12-14d0-421e-8a11-5d2d5133755c.jpg',
+      'rooms/luxury-pool-villa/78ae8c0b-99ef-43de-8d2b-faed666f0338.jpg',
+      'rooms/luxury-pool-villa/79014a1f-6516-4119-aab1-af06ae1a6716.jpg',
+      'rooms/luxury-pool-villa/82449938-db52-4f22-8726-83f532e1e280.jpg',
+      'rooms/luxury-pool-villa/8909dbbc-0c5e-4a7c-ab72-ac0e9bf04e6b.jpg',
+      'rooms/luxury-pool-villa/8acc4ca4-546b-47f9-bf18-70621145ceb1.jpg',
+      'rooms/luxury-pool-villa/973f176c-9ff7-456c-8ca9-38834414c013.jpg',
+      'rooms/luxury-pool-villa/97ae74e2-18f6-4247-8b75-4fd007b76556.jpg',
+      'rooms/luxury-pool-villa/9884186e-bd29-4508-9c43-6468831375c8.jpg',
+      'rooms/luxury-pool-villa/acbd2a20-fdde-438c-9ae8-8b77f3a44961.jpg',
+      'rooms/luxury-pool-villa/f80c2bea-689f-48b4-a2e4-4ea118e68cb5.jpg',
+    ]
+  },
+  'pool-villa-20': {
+    name: 'Grand Pool Villa',
+    pax: 'Up to 20 guests · ₱15,000 – ₱30,000',
+    images: [
+      'rooms/luxury-pool-villa/05041000-f040-4870-a8e1-31a9f0425e8a.jpg',
+      'rooms/luxury-pool-villa/09799ab9-39fb-409c-b514-20f04b71d2cd.jpg',
+      'rooms/luxury-pool-villa/1a126c1f-0e06-4f26-888e-b2fc8d6b1b6e.jpg',
+      'rooms/luxury-pool-villa/1d818f79-276c-44b9-bf40-e01e202f43b0.jpg',
+      'rooms/luxury-pool-villa/27031544-6646-46c1-90d6-c1cbebd38d5c.jpg',
+      'rooms/luxury-pool-villa/4939c510-59f0-4cdd-846a-0f39e18069a1.jpg',
+      'rooms/luxury-pool-villa/533e8e58-e93c-443c-a422-3840dd5d7fab.jpg',
+      'rooms/luxury-pool-villa/6af5e277-7e30-4098-8a32-1f8fc83b8fec.jpg',
+      'rooms/luxury-pool-villa/75a46a12-14d0-421e-8a11-5d2d5133755c.jpg',
+      'rooms/luxury-pool-villa/78ae8c0b-99ef-43de-8d2b-faed666f0338.jpg',
+      'rooms/luxury-pool-villa/79014a1f-6516-4119-aab1-af06ae1a6716.jpg',
+      'rooms/luxury-pool-villa/82449938-db52-4f22-8726-83f532e1e280.jpg',
+      'rooms/luxury-pool-villa/8909dbbc-0c5e-4a7c-ab72-ac0e9bf04e6b.jpg',
+      'rooms/luxury-pool-villa/8acc4ca4-546b-47f9-bf18-70621145ceb1.jpg',
+      'rooms/luxury-pool-villa/973f176c-9ff7-456c-8ca9-38834414c013.jpg',
+      'rooms/luxury-pool-villa/97ae74e2-18f6-4247-8b75-4fd007b76556.jpg',
+      'rooms/luxury-pool-villa/9884186e-bd29-4508-9c43-6468831375c8.jpg',
+      'rooms/luxury-pool-villa/acbd2a20-fdde-438c-9ae8-8b77f3a44961.jpg',
+      'rooms/luxury-pool-villa/f80c2bea-689f-48b4-a2e4-4ea118e68cb5.jpg',
+    ]
+  },
+};
+
+
+let currentImages = [];
+let currentIndex = 0;
+
+function openGallery(roomKey) {
+  const room = ROOMS[roomKey];
+  if (!room || room.images.length === 0) {
+    alert('Photos coming soon for ' + room.name + '!');
+    return;
+  }
+  currentImages = room.images;
+  currentIndex = 0;
+  document.getElementById('lb-room-name').textContent = room.name;
+  document.getElementById('lb-room-pax').textContent = room.pax;
+  renderLightbox();
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function renderLightbox() {
+  const img = document.getElementById('lb-main-img');
+  img.style.opacity = '0';
+  img.src = currentImages[currentIndex];
+  img.onload = () => { img.style.opacity = '1'; };
+  document.getElementById('lb-counter').textContent =
+    (currentIndex + 1) + ' / ' + currentImages.length;
+
+  const sidebar = document.getElementById('lb-sidebar');
+  sidebar.innerHTML = '';
+  currentImages.forEach((src, i) => {
+    const t = document.createElement('img');
+    t.src = src;
+    t.className = 'lb-thumb' + (i === currentIndex ? ' active' : '');
+    t.onclick = () => { currentIndex = i; renderLightbox(); };
+    sidebar.appendChild(t);
+  });
+}
+
+function lbNext() {
+  currentIndex = (currentIndex + 1) % currentImages.length;
+  renderLightbox();
+}
+
+function lbPrev() {
+  currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
+  renderLightbox();
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'ArrowRight') lbNext();
+  if (e.key === 'ArrowLeft') lbPrev();
+  if (e.key === 'Escape') closeLightbox();
+});
+
+document.getElementById('lightbox').addEventListener('click', e => {
+  if (e.target.id === 'lightbox') closeLightbox();
+});
+
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 60);
+});
+
+
+document.querySelectorAll('.room-card').forEach(card => {
+  const roomKey = card.getAttribute('onclick').match(/'(.*?)'/)[1];
+  const room = ROOMS[roomKey];
+  if (room && room.images.length > 0) {
+    const thumb = card.querySelector('.room-thumb');
+    const placeholder = thumb.querySelector('.room-thumb-placeholder');
+    const img = document.createElement('img');
+    img.src = room.images[0];
+    img.alt = room.name;
+    if (placeholder) placeholder.replaceWith(img);
+  }
+});
+</script>
+<!-- FLOATING BUTTONS -->
+<div class="wa-float">
+  <button class="wa-promo-btn" onclick="openPromo()">🏖️ View Rooms &amp; Rates</button>
+  <a class="wa-chat-btn" href="https://wa.me/63XXXXXXXXXX?text=Hi!%20I%27d%20like%20to%20inquire%20about%20Casobe%20Beach%20Resort." target="_blank" title="Chat on WhatsApp">
+    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 2C8.28 2 2 8.28 2 16c0 2.46.67 4.76 1.83 6.74L2 30l7.5-1.79A13.94 13.94 0 0016 30c7.72 0 14-6.28 14-14S23.72 2 16 2zm0 25.5a11.44 11.44 0 01-5.84-1.6l-.42-.25-4.45 1.06 1.09-4.34-.28-.44A11.5 11.5 0 1116 27.5zm6.3-8.6c-.34-.17-2.02-1-2.34-1.11-.31-.11-.54-.17-.77.17-.23.34-.88 1.11-1.08 1.34-.2.23-.4.26-.74.09-.34-.17-1.44-.53-2.74-1.69-1.01-.9-1.7-2.01-1.9-2.35-.2-.34-.02-.52.15-.69.15-.15.34-.4.51-.6.17-.2.23-.34.34-.57.11-.23.06-.43-.03-.6-.09-.17-.77-1.85-1.05-2.54-.28-.67-.56-.58-.77-.59H10.8c-.2 0-.54.07-.82.37-.28.3-1.09 1.06-1.09 2.59s1.12 3.01 1.28 3.22c.17.2 2.2 3.36 5.33 4.71.74.32 1.33.51 1.78.66.75.24 1.43.2 1.97.12.6-.09 2.02-.83 2.3-1.63.28-.8.28-1.49.2-1.63-.09-.14-.31-.23-.65-.4z"/>
+    </svg>
+  </a>
+</div>
+
+<!-- PROMOTIONS POPUP -->
+<div class="promo-overlay" id="promoOverlay" onclick="handlePromoOverlayClick(event)">
+  <div class="promo-modal">
+    <div class="promo-modal-head">
+      <div class="promo-modal-head-text">
+        <p class="eyebrow">Casobe Beach Resort</p>
+        <h3>Rooms &amp; Rates</h3>
+      </div>
+      <button class="promo-close" onclick="closePromo()">✕</button>
+    </div>
+
+    <div class="promo-list" id="promoList">
+      <!-- populated by JS -->
+    </div>
+
+    <div class="promo-footer">
+      Message us on WhatsApp to check availability &amp; book your stay.
+    </div>
+  </div>
+</div>
+
+<script>
+// ── WHATSAPP NUMBER — replace 63XXXXXXXXXX with actual number ──
+const WA_NUMBER = '63XXXXXXXXXX';
+
+function waLink(roomName) {
+  const msg = encodeURIComponent(`Hi! I'd like to inquire about the ${roomName} at Casobe Beach Resort.`);
+  return `https://wa.me/${WA_NUMBER}?text=${msg}`;
+}
+
+// ── PROMO ROOM LIST ──
+const PROMO_ROOMS = [
+  { tier: 'Standard',      name: 'Cocoon Pod',           price: '₱3,500', range: '– ₱7,500',  key: 'cocoon-pod' },
+  { tier: 'Standard',      name: 'Luxury Couples Room',  price: '₱5,400', range: '– ₱10,800', key: 'luxury-couples' },
+  { tier: 'Standard',      name: 'Apollo Aeropod',       price: '₱4,000', range: '– ₱8,000',  key: 'apollo-aeropod' },
+  { tier: 'Standard',      name: 'Cupola',               price: '₱4,600', range: '– ₱9,200',  key: 'cupola' },
+  { tier: 'Standard',      name: 'Beachfront Cabin',     price: '₱5,700', range: '– ₱10,500', key: 'beachfront-cabin' },
+  { tier: 'Premium',       name: 'Beach Suite',          price: '₱6,400', range: '– ₱12,800', key: 'beach-suite' },
+  { tier: 'Premium',       name: 'Private Villa',        price: '₱7,000', range: '– ₱14,000', key: 'private-villa' },
+  { tier: 'Luxury Villa',  name: 'Luxury Pool Villa',    price: '₱12,500',range: '– ₱25,000', key: 'pool-villa-15' },
+  { tier: 'Luxury Villa',  name: 'Grand Pool Villa',     price: '₱15,000',range: '– ₱30,000', key: 'pool-villa-20' },
+];
+
+function buildPromoList() {
+  const list = document.getElementById('promoList');
+  list.innerHTML = '';
+  PROMO_ROOMS.forEach(room => {
+    const firstImg = ROOMS[room.key] && ROOMS[room.key].images[0];
+    const item = document.createElement('a');
+    item.href = waLink(room.name);
+    item.target = '_blank';
+    item.rel = 'noopener';
+    item.className = 'promo-item';
+    item.innerHTML = `
+      ${firstImg
+        ? `<img class="promo-item-img" src="${firstImg}" alt="${room.name}">`
+        : `<div class="promo-item-img-placeholder"></div>`}
+      <div class="promo-item-info">
+        <p class="promo-tier">${room.tier}</p>
+        <p class="promo-name">${room.name}</p>
+        <p class="promo-price">From <strong>${room.price}</strong> ${room.range}</p>
+      </div>
+      <span class="promo-arrow">›</span>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function openPromo() {
+  buildPromoList();
+  document.getElementById('promoOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePromo() {
+  document.getElementById('promoOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handlePromoOverlayClick(e) {
+  if (e.target === document.getElementById('promoOverlay')) closePromo();
+}
+</script>
+
+</body>
+</html>
