@@ -1968,16 +1968,17 @@ let bkRoomKey = null;
 let bkBookedDates = []; // [{checkin, checkout, status}]
 let bkSelectedFile = null;
 
+// Single nightly rate per room — update these when client confirms final pricing
 const ROOM_PRICES = {
-  'cocoon-pod':      { min: 3500,  max: 7500  },
-  'luxury-couples':  { min: 5400,  max: 10800 },
-  'apollo-aeropod':  { min: 4000,  max: 8000  },
-  'cupola':          { min: 4600,  max: 9200  },
-  'beachfront-cabin':{ min: 5700,  max: 10500 },
-  'beach-suite':     { min: 6400,  max: 12800 },
-  'private-villa':   { min: 7000,  max: 14000 },
-  'pool-villa-15':   { min: 12500, max: 25000 },
-  'pool-villa-20':   { min: 15000, max: 30000 },
+  'cocoon-pod':       3500,
+  'luxury-couples':   5400,
+  'apollo-aeropod':   4000,
+  'cupola':           4600,
+  'beachfront-cabin': 5700,
+  'beach-suite':      6400,
+  'private-villa':    7000,
+  'pool-villa-15':    12500,
+  'pool-villa-20':    15000,
 };
 
 function openBooking(roomKey) {
@@ -2057,12 +2058,14 @@ function buildPaymentInfo() {
   const ci = document.getElementById('bkCheckin').value;
   const co = document.getElementById('bkCheckout').value;
   const nights = Math.ceil((new Date(co) - new Date(ci)) / 86400000);
-  const price = ROOM_PRICES[bkRoomKey];
+  const nightlyRate = ROOM_PRICES[bkRoomKey];
+  const total = nightlyRate * nights;
   const room = ROOMS[bkRoomKey];
   document.getElementById('bkPayInfo').innerHTML = `
     <strong>${room.name}</strong><br>
     ${formatDate(ci)} → ${formatDate(co)} · ${nights} night${nights>1?'s':''}<br>
-    <span class="bk-amount">₱${(price.min * nights).toLocaleString()} – ₱${(price.max * nights).toLocaleString()}</span>
+    <small style="color:var(--muted);font-size:12px;margin-bottom:4px;display:block">₱${nightlyRate.toLocaleString()} × ${nights} night${nights>1?'s':''}</small>
+    <span class="bk-amount">₱${total.toLocaleString()}</span>
     <small style="color:var(--muted);font-size:12px">Send payment via GCash or bank transfer.<br>
     Account details will be sent to your WhatsApp after submission.<br>
     Then upload your receipt screenshot below.</small>
@@ -2138,12 +2141,20 @@ async function submitBooking() {
     await uploadBytes(storageRef, bkSelectedFile);
     const screenshotURL = await getDownloadURL(storageRef);
     // save booking
+    const ci = document.getElementById('bkCheckin').value;
+    const co = document.getElementById('bkCheckout').value;
+    const nights = Math.ceil((new Date(co) - new Date(ci)) / 86400000);
+    const nightlyRate = ROOM_PRICES[bkRoomKey];
+    const totalAmount = nightlyRate * nights;
     const booking = {
       refCode,
       roomKey: bkRoomKey,
       roomName: ROOMS[bkRoomKey].name,
-      checkin: document.getElementById('bkCheckin').value,
-      checkout: document.getElementById('bkCheckout').value,
+      checkin: ci,
+      checkout: co,
+      nights,
+      nightlyRate,
+      totalAmount,
       guestName: document.getElementById('bkName').value.trim(),
       guestPhone: document.getElementById('bkPhone').value.trim(),
       guestEmail: document.getElementById('bkEmail').value.trim(),
