@@ -11,29 +11,9 @@ A full record of the build process for the **Buracaidelaiya / Casobe Beach Resor
 - Firebase Storage for screenshots
 - Free tier: 1GB storage, 50k reads/day
 
-**Alternatives considered:**
-
-| Option | Database | Storage | Free Tier |
-|--------|----------|---------|-----------|
-| Supabase | Supabase DB | Supabase Storage | 500MB DB, 1GB storage |
-| Cloudinary + Supabase | Supabase DB | Cloudinary | Both generous |
-| Firebase | Firestore | Firebase Storage | 1GB storage, 50k reads/day |
-| PocketBase | PocketBase | PocketBase | Unlimited (self-hosted) |
-
-**Recommended:** Supabase — one platform, clean dashboard, plain SQL.
-
 ---
 
 ## May 9 — Admin Password Security
-
-**Problem:** Hardcoded password visible in browser source via F12.
-
-**Solution:** Firebase Authentication
-
-**Why `.env` doesn't work here:**
-`.env` only works server-side. This is a pure HTML/JS site — everything sent to the browser is visible regardless of `.env`.
-
-**Fix applied:** Replaced hardcoded password with Firebase Auth (email + password). Password never appears in code.
 
 **Setup steps:**
 1. Go to Firebase Console → Authentication → Get started
