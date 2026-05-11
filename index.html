@@ -193,6 +193,9 @@ nav.scrolled {
   padding: 9px 22px;
   border-radius: 40px;
   text-decoration: none;
+  background: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
   transition: background 0.2s, border-color 0.2s;
 }
 
@@ -422,6 +425,24 @@ nav.scrolled {
 .room-card:hover .room-cta svg {
   transform: translateX(5px);
 }
+
+.room-book-btn {
+  display: block;
+  width: calc(100% - 44px);
+  margin: 0 22px 18px;
+  padding: 10px;
+  background: var(--ocean);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.room-book-btn:hover { background: #2d6458; }
 
 @keyframes card-pop {
   from { opacity: 0; transform: translateY(24px) scale(0.98); }
@@ -921,14 +942,82 @@ footer .copy {
   text-align: center;
   line-height: 1.6;
 }
+
+/* ── ROOM PICKER MODAL ───────────────── */
+.picker-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(5,10,8,0.72); backdrop-filter: blur(4px);
+  z-index: 800; align-items: center; justify-content: center; padding: 16px;
+}
+.picker-overlay.open { display: flex; }
+.picker-modal {
+  background: var(--white); border-radius: 20px;
+  width: 100%; max-width: 520px; max-height: 88vh;
+  display: flex; flex-direction: column; overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.28);
+}
+.picker-head {
+  background: var(--ocean); padding: 18px 20px;
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.picker-head h3 { font-family: "Playfair Display", serif; font-size: 20px; font-weight: 400; color: #fff; }
+.picker-head p  { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+.picker-close {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.3); background: none; color: #fff;
+  font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.picker-close:hover { background: rgba(255,255,255,0.15); }
+.picker-list { overflow-y: auto; flex: 1; padding: 10px 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.picker-tier { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--muted); padding: 10px 6px 4px; }
+.picker-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: 12px;
+  border: 1px solid var(--sand-mid); background: var(--white);
+  cursor: pointer; transition: background 0.15s, border-color 0.15s;
+}
+.picker-item:hover { background: var(--sand); border-color: rgba(59,125,110,0.3); }
+.picker-item-img { width: 64px; height: 50px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: #c8bfb4; }
+.picker-item-img-ph { width: 64px; height: 50px; border-radius: 8px; background: linear-gradient(135deg,#c8bfb4,#a89d90); flex-shrink: 0; }
+.picker-item-info { flex: 1; min-width: 0; }
+.picker-item-name { font-family: "Playfair Display", serif; font-size: 15px; color: var(--bark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.picker-item-pax  { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.picker-item-price { font-family: "Playfair Display", serif; font-size: 15px; color: var(--ocean); flex-shrink: 0; text-align: right; }
+.picker-item-price small { display: block; font-family: "DM Sans", sans-serif; font-size: 10px; color: var(--muted); }
 </style>
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+  // ── REPLACE WITH YOUR FIREBASE CONFIG ──
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+  // expose to global scope
+  window._db = db;
+  window._storage = storage;
+  window._fbModules = { collection, addDoc, getDocs, query, where, orderBy, ref, uploadBytes, getDownloadURL };
+</script>
 </head>
 <body>
 
 <!-- NAV -->
 <nav id="nav">
   <span class="nav-logo">CASOBE BEACH RESORT</span>
-  <a href="https://wa.me/63XXXXXXXXXX?text=Hi!%20I%27d%20like%20to%20book%20a%20stay%20at%20Casobe%20Beach%20Resort." target="_blank" class="nav-book">Book a Stay</a>
+  <button class="nav-book" onclick="openRoomPickerModal()" >Book a Stay</button>
 </nav>
 
 <!-- HERO -->
@@ -981,7 +1070,7 @@ footer .copy {
   <div class="rooms-grid">
 
     <!-- COCOON POD -->
-    <div class="room-card" onclick="openGallery('cocoon-pod')">
+    <div class="room-card">
       <div class="room-thumb">
        
         <div class="room-thumb-placeholder">Cocoon Pod</div>
@@ -995,13 +1084,14 @@ footer .copy {
             <span class="amount">₱3,500</span>
             <span class="up-to">– ₱7,500</span>
           </div>
-          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+          <span class="room-cta" onclick="event.stopPropagation();openGallery('cocoon-pod')">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
         </div>
+        <button class="room-book-btn" onclick="event.stopPropagation();openBooking('cocoon-pod')">Book this Room</button>
       </div>
     </div>
 
     <!-- LUXURY COUPLES ROOM -->
-    <div class="room-card" onclick="openGallery('luxury-couples')">
+    <div class="room-card">
       <div class="room-thumb">
       
         <div class="room-thumb-placeholder">Luxury Couples Room</div>
@@ -1015,13 +1105,14 @@ footer .copy {
             <span class="amount">₱5,400</span>
             <span class="up-to">– ₱10,800</span>
           </div>
-          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+          <span class="room-cta" onclick="event.stopPropagation();openGallery('luxury-couples')">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
         </div>
+        <button class="room-book-btn" onclick="event.stopPropagation();openBooking('luxury-couples')">Book this Room</button>
       </div>
     </div>
 
     <!-- APOLLO AEROPOD -->
-    <div class="room-card" onclick="openGallery('apollo-aeropod')">
+    <div class="room-card">
       <div class="room-thumb">
         
         <div class="room-thumb-placeholder">Apollo Aeropod</div>
@@ -1035,13 +1126,14 @@ footer .copy {
             <span class="amount">₱4,000</span>
             <span class="up-to">– ₱8,000</span>
           </div>
-          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+          <span class="room-cta" onclick="event.stopPropagation();openGallery('apollo-aeropod')">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
         </div>
+        <button class="room-book-btn" onclick="event.stopPropagation();openBooking('apollo-aeropod')">Book this Room</button>
       </div>
     </div>
 
     <!-- CUPOLA -->
-    <div class="room-card" onclick="openGallery('cupola')">
+    <div class="room-card">
       <div class="room-thumb">
        
         <div class="room-thumb-placeholder">Cupola</div>
@@ -1055,13 +1147,14 @@ footer .copy {
             <span class="amount">₱4,600</span>
             <span class="up-to">– ₱9,200</span>
           </div>
-          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+          <span class="room-cta" onclick="event.stopPropagation();openGallery('cupola')">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
         </div>
+        <button class="room-book-btn" onclick="event.stopPropagation();openBooking('cupola')">Book this Room</button>
       </div>
     </div>
 
     <!-- BEACHFRONT CABIN -->
-    <div class="room-card" onclick="openGallery('beachfront-cabin')">
+    <div class="room-card">
       <div class="room-thumb">
      
         <div class="room-thumb-placeholder">Beachfront Cabin</div>
@@ -1075,8 +1168,9 @@ footer .copy {
             <span class="amount">₱5,700</span>
             <span class="up-to">– ₱10,500</span>
           </div>
-          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+          <span class="room-cta" onclick="event.stopPropagation();openGallery('beachfront-cabin')">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
         </div>
+        <button class="room-book-btn" onclick="event.stopPropagation();openBooking('beachfront-cabin')">Book this Room</button>
       </div>
     </div>
 
@@ -1087,7 +1181,7 @@ footer .copy {
   <div class="rooms-grid">
 
     <!-- BEACH SUITE -->
-    <div class="room-card" onclick="openGallery('beach-suite')">
+    <div class="room-card">
       <div class="room-thumb">
       
         <div class="room-thumb-placeholder">Beach Suite</div>
@@ -1101,13 +1195,14 @@ footer .copy {
             <span class="amount">₱6,400</span>
             <span class="up-to">– ₱12,800</span>
           </div>
-          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+          <span class="room-cta" onclick="event.stopPropagation();openGallery('beach-suite')">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
         </div>
+        <button class="room-book-btn" onclick="event.stopPropagation();openBooking('beach-suite')">Book this Room</button>
       </div>
     </div>
 
     <!-- PRIVATE VILLA -->
-    <div class="room-card" onclick="openGallery('private-villa')">
+    <div class="room-card">
       <div class="room-thumb">
         
         <div class="room-thumb-placeholder">Private Villa</div>
@@ -1121,8 +1216,9 @@ footer .copy {
             <span class="amount">₱7,000</span>
             <span class="up-to">– ₱14,000</span>
           </div>
-          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+          <span class="room-cta" onclick="event.stopPropagation();openGallery('private-villa')">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
         </div>
+        <button class="room-book-btn" onclick="event.stopPropagation();openBooking('private-villa')">Book this Room</button>
       </div>
     </div>
 
@@ -1133,7 +1229,7 @@ footer .copy {
   <div class="rooms-grid">
 
     <!-- POOL VILLA 15 -->
-    <div class="room-card" onclick="openGallery('pool-villa-15')">
+    <div class="room-card">
       <div class="room-thumb">
        
         <div class="room-thumb-placeholder">Luxury Pool Villa</div>
@@ -1147,13 +1243,14 @@ footer .copy {
             <span class="amount">₱12,500</span>
             <span class="up-to">– ₱25,000</span>
           </div>
-          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+          <span class="room-cta" onclick="event.stopPropagation();openGallery('pool-villa-15')">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
         </div>
+        <button class="room-book-btn" onclick="event.stopPropagation();openBooking('pool-villa-15')">Book this Room</button>
       </div>
     </div>
 
     <!-- POOL VILLA 20 -->
-    <div class="room-card" onclick="openGallery('pool-villa-20')">
+    <div class="room-card">
       <div class="room-thumb">
       
         <div class="room-thumb-placeholder">Grand Pool Villa</div>
@@ -1167,8 +1264,9 @@ footer .copy {
             <span class="amount">₱15,000</span>
             <span class="up-to">– ₱30,000</span>
           </div>
-          <span class="room-cta">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
+          <span class="room-cta" onclick="event.stopPropagation();openGallery('pool-villa-20')">Photos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>
         </div>
+        <button class="room-book-btn" onclick="event.stopPropagation();openBooking('pool-villa-20')">Book this Room</button>
       </div>
     </div>
 
@@ -1449,7 +1547,11 @@ window.addEventListener('scroll', () => {
 
 
 document.querySelectorAll('.room-card').forEach(card => {
-  const roomKey = card.getAttribute('onclick').match(/'(.*?)'/)[1];
+  const bookBtn = card.querySelector('.room-book-btn');
+  if (!bookBtn) return;
+  const match = bookBtn.getAttribute('onclick').match(/openBooking\('([^']+)'\)/);
+  if (!match) return;
+  const roomKey = match[1];
   const room = ROOMS[roomKey];
   if (room && room.images.length > 0) {
     const thumb = card.querySelector('.room-thumb');
@@ -1457,7 +1559,10 @@ document.querySelectorAll('.room-card').forEach(card => {
     const img = document.createElement('img');
     img.src = room.images[0];
     img.alt = room.name;
+    img.style.cursor = 'pointer';
+    img.onclick = () => openGallery(roomKey);
     if (placeholder) placeholder.replaceWith(img);
+    else { thumb.innerHTML = ''; thumb.appendChild(img); }
   }
 });
 </script>
@@ -1519,11 +1624,10 @@ function buildPromoList() {
   list.innerHTML = '';
   PROMO_ROOMS.forEach(room => {
     const firstImg = ROOMS[room.key] && ROOMS[room.key].images[0];
-    const item = document.createElement('a');
-    item.href = waLink(room.name);
-    item.target = '_blank';
-    item.rel = 'noopener';
+    const item = document.createElement('div');
     item.className = 'promo-item';
+    item.style.cursor = 'pointer';
+    item.onclick = () => { closePromo(); openBooking(room.key); };
     item.innerHTML = `
       ${firstImg
         ? `<img class="promo-item-img" src="${firstImg}" alt="${room.name}">`
@@ -1552,6 +1656,595 @@ function closePromo() {
 
 function handlePromoOverlayClick(e) {
   if (e.target === document.getElementById('promoOverlay')) closePromo();
+}
+</script>
+
+<!-- ══════════════════════════════════════
+     BOOKING MODAL
+══════════════════════════════════════ -->
+<style>
+/* ── Booking Modal ── */
+.bk-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(5,10,8,0.72);
+  backdrop-filter: blur(4px);
+  z-index: 900;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.bk-overlay.open { display: flex; }
+
+.bk-modal {
+  background: var(--white);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.3);
+}
+
+.bk-head {
+  background: var(--ocean);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.bk-head h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 19px;
+  font-weight: 400;
+  color: #fff;
+}
+.bk-head p { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 2px; letter-spacing: 0.05em; }
+.bk-close {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: none; color: #fff; font-size: 15px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background 0.2s;
+}
+.bk-close:hover { background: rgba(255,255,255,0.15); }
+
+.bk-body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* steps */
+.bk-step { display: none; flex-direction: column; gap: 14px; }
+.bk-step.active { display: flex; }
+
+.bk-step-label {
+  font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--ocean); margin-bottom: -4px;
+}
+
+/* availability view */
+.bk-avail-info {
+  background: #f0f9f5;
+  border: 1px solid rgba(59,125,110,0.2);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: var(--bark);
+  line-height: 1.6;
+}
+.bk-booked-list { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.bk-booked-item {
+  background: #fff3f3;
+  border: 1px solid rgba(220,50,50,0.15);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #8b2020;
+}
+.bk-avail-empty {
+  font-size: 13px; color: var(--ocean); font-weight: 500;
+  text-align: center; padding: 8px 0;
+}
+
+/* form fields */
+.bk-field { display: flex; flex-direction: column; gap: 5px; }
+.bk-field label {
+  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); font-weight: 500;
+}
+.bk-field input, .bk-field select, .bk-field textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--sand-mid);
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: #fff;
+  transition: border-color 0.2s;
+  outline: none;
+}
+.bk-field input:focus, .bk-field select:focus, .bk-field textarea:focus {
+  border-color: var(--ocean);
+}
+.bk-field textarea { resize: vertical; min-height: 80px; }
+.bk-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* payment info box */
+.bk-payment-info {
+  background: #fffbf0;
+  border: 1px solid rgba(180,140,0,0.2);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--bark);
+}
+.bk-payment-info strong { color: var(--bark); }
+.bk-payment-info .bk-amount {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  color: var(--ocean);
+  display: block;
+  margin: 6px 0 2px;
+}
+
+/* file upload */
+.bk-upload-zone {
+  border: 2px dashed var(--sand-mid);
+  border-radius: 10px;
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+}
+.bk-upload-zone:hover, .bk-upload-zone.dragover {
+  border-color: var(--ocean);
+  background: #f0f9f5;
+}
+.bk-upload-zone input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.bk-upload-icon { font-size: 28px; margin-bottom: 6px; }
+.bk-upload-text { font-size: 13px; color: var(--muted); }
+.bk-upload-text strong { color: var(--ocean); }
+.bk-upload-preview {
+  width: 100%; border-radius: 8px; margin-top: 10px;
+  display: none; max-height: 180px; object-fit: contain;
+}
+
+/* success */
+.bk-success {
+  text-align: center; padding: 20px 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.bk-success-icon { font-size: 48px; }
+.bk-success h4 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px; color: var(--bark); font-weight: 400;
+}
+.bk-success p { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 320px; }
+.bk-ref { font-size: 11px; letter-spacing: 0.1em; color: var(--ocean); margin-top: 4px; }
+
+/* buttons */
+.bk-footer {
+  flex-shrink: 0;
+  padding: 14px 20px;
+  border-top: 1px solid var(--sand-mid);
+  display: flex; gap: 10px; justify-content: flex-end;
+}
+.bk-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 11px 24px; border-radius: 40px; border: none; cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+.bk-btn-primary { background: var(--ocean); color: #fff; }
+.bk-btn-primary:hover { background: #2d6458; }
+.bk-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.bk-btn-secondary {
+  background: transparent; color: var(--bark-light);
+  border: 1px solid var(--sand-mid);
+}
+.bk-btn-secondary:hover { background: var(--sand); }
+
+.bk-error {
+  font-size: 12px; color: #c0392b;
+  background: #fff5f5; border: 1px solid rgba(192,57,43,0.2);
+  border-radius: 8px; padding: 10px 12px; display: none;
+}
+.bk-error.show { display: block; }
+</style>
+
+<!-- Booking Modal HTML -->
+<div class="bk-overlay" id="bkOverlay" onclick="handleBkOverlay(event)">
+  <div class="bk-modal">
+    <div class="bk-head">
+      <div>
+        <h3 id="bkRoomTitle">Book a Room</h3>
+        <p id="bkRoomPax"></p>
+      </div>
+      <button class="bk-close" onclick="closeBooking()">✕</button>
+    </div>
+
+    <div class="bk-body" id="bkBody">
+
+      <!-- STEP 1: Check availability -->
+      <div class="bk-step active" id="bkStep1">
+        <p class="bk-step-label">Step 1 of 3 — Check Availability</p>
+        <div class="bk-row">
+          <div class="bk-field">
+            <label>Check-in Date</label>
+            <input type="date" id="bkCheckin" onchange="onDateChange()">
+          </div>
+          <div class="bk-field">
+            <label>Check-out Date</label>
+            <input type="date" id="bkCheckout" onchange="onDateChange()">
+          </div>
+        </div>
+        <div id="bkAvailResult"></div>
+        <div class="bk-error" id="bkErr1"></div>
+      </div>
+
+      <!-- STEP 2: Guest details -->
+      <div class="bk-step" id="bkStep2">
+        <p class="bk-step-label">Step 2 of 3 — Your Details</p>
+        <div class="bk-field">
+          <label>Full Name</label>
+          <input type="text" id="bkName" placeholder="Juan dela Cruz">
+        </div>
+        <div class="bk-row">
+          <div class="bk-field">
+            <label>Phone / WhatsApp</label>
+            <input type="tel" id="bkPhone" placeholder="+63 917 123 4567">
+          </div>
+          <div class="bk-field">
+            <label>No. of Guests</label>
+            <input type="number" id="bkGuests" min="1" placeholder="2">
+          </div>
+        </div>
+        <div class="bk-field">
+          <label>Email (optional)</label>
+          <input type="email" id="bkEmail" placeholder="juan@email.com">
+        </div>
+        <div class="bk-field">
+          <label>Special Requests</label>
+          <textarea id="bkNotes" placeholder="Early check-in, dietary needs, etc."></textarea>
+        </div>
+        <div class="bk-error" id="bkErr2"></div>
+      </div>
+
+      <!-- STEP 3: Payment -->
+      <div class="bk-step" id="bkStep3">
+        <p class="bk-step-label">Step 3 of 3 — Payment</p>
+        <div class="bk-payment-info" id="bkPayInfo"></div>
+        <div class="bk-field">
+          <label>Upload Payment Screenshot</label>
+          <div class="bk-upload-zone" id="bkDropzone">
+            <input type="file" id="bkScreenshot" accept="image/*" onchange="onFileSelect(event)">
+            <div class="bk-upload-icon">📸</div>
+            <p class="bk-upload-text">Tap to select or drag screenshot here<br><strong>GCash / Bank transfer receipt</strong></p>
+          </div>
+          <img id="bkPreviewImg" class="bk-upload-preview" src="" alt="Preview">
+        </div>
+        <div class="bk-error" id="bkErr3"></div>
+      </div>
+
+      <!-- SUCCESS -->
+      <div class="bk-step" id="bkStepDone">
+        <div class="bk-success">
+          <div class="bk-success-icon">✅</div>
+          <h4>Booking Submitted!</h4>
+          <p>Your booking is now <strong>pending review</strong>. We'll confirm once your payment is verified. Expect a WhatsApp message from us shortly.</p>
+          <p class="bk-ref" id="bkRefCode"></p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="bk-footer" id="bkFooter">
+      <button class="bk-btn bk-btn-secondary" id="bkBackBtn" onclick="bkBack()" style="display:none">← Back</button>
+      <button class="bk-btn bk-btn-primary" id="bkNextBtn" onclick="bkNext()">Check Availability</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// BOOKING MODAL LOGIC
+// ═══════════════════════════════════════════════════
+let bkCurrentStep = 1;
+let bkRoomKey = null;
+let bkBookedDates = []; // [{checkin, checkout, status}]
+let bkSelectedFile = null;
+
+const ROOM_PRICES = {
+  'cocoon-pod':      { min: 3500,  max: 7500  },
+  'luxury-couples':  { min: 5400,  max: 10800 },
+  'apollo-aeropod':  { min: 4000,  max: 8000  },
+  'cupola':          { min: 4600,  max: 9200  },
+  'beachfront-cabin':{ min: 5700,  max: 10500 },
+  'beach-suite':     { min: 6400,  max: 12800 },
+  'private-villa':   { min: 7000,  max: 14000 },
+  'pool-villa-15':   { min: 12500, max: 25000 },
+  'pool-villa-20':   { min: 15000, max: 30000 },
+};
+
+function openBooking(roomKey) {
+  bkRoomKey = roomKey;
+  bkCurrentStep = 1;
+  bkSelectedFile = null;
+  bkBookedDates = [];
+  const room = ROOMS[roomKey];
+  document.getElementById('bkRoomTitle').textContent = room.name;
+  document.getElementById('bkRoomPax').textContent = room.pax;
+  document.getElementById('bkCheckin').value = '';
+  document.getElementById('bkCheckout').value = '';
+  document.getElementById('bkAvailResult').innerHTML = '';
+  document.getElementById('bkPreviewImg').style.display = 'none';
+  document.getElementById('bkPreviewImg').src = '';
+  bkShowStep(1);
+  document.getElementById('bkOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // load existing bookings for this room
+  loadRoomBookings(roomKey);
+}
+
+function closeBooking() {
+  document.getElementById('bkOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleBkOverlay(e) {
+  if (e.target.id === 'bkOverlay') closeBooking();
+}
+
+function bkShowStep(n) {
+  bkCurrentStep = n;
+  document.querySelectorAll('.bk-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('bkStep' + (n === 4 ? 'Done' : n)).classList.add('active');
+  // hide/show nav buttons
+  const backBtn = document.getElementById('bkBackBtn');
+  const nextBtn = document.getElementById('bkNextBtn');
+  const footer = document.getElementById('bkFooter');
+  if (n === 4) { footer.style.display = 'none'; return; }
+  footer.style.display = 'flex';
+  backBtn.style.display = n > 1 ? 'block' : 'none';
+  const labels = { 1: 'Next: My Details', 2: 'Next: Payment', 3: 'Submit Booking' };
+  nextBtn.textContent = labels[n];
+  nextBtn.disabled = false;
+}
+
+function bkBack() {
+  if (bkCurrentStep > 1) bkShowStep(bkCurrentStep - 1);
+}
+
+async function bkNext() {
+  hideAllBkErrors();
+  if (bkCurrentStep === 1) {
+    const ci = document.getElementById('bkCheckin').value;
+    const co = document.getElementById('bkCheckout').value;
+    if (!ci || !co) return showBkErr('bkErr1', 'Please select check-in and check-out dates.');
+    if (ci >= co) return showBkErr('bkErr1', 'Check-out must be after check-in.');
+    if (datesOverlap(ci, co)) return showBkErr('bkErr1', 'These dates overlap with an existing booking. Please choose different dates.');
+    bkShowStep(2);
+  } else if (bkCurrentStep === 2) {
+    const name = document.getElementById('bkName').value.trim();
+    const phone = document.getElementById('bkPhone').value.trim();
+    const guests = document.getElementById('bkGuests').value;
+    if (!name) return showBkErr('bkErr2', 'Please enter your full name.');
+    if (!phone) return showBkErr('bkErr2', 'Please enter your phone number.');
+    if (!guests || guests < 1) return showBkErr('bkErr2', 'Please enter the number of guests.');
+    buildPaymentInfo();
+    bkShowStep(3);
+  } else if (bkCurrentStep === 3) {
+    if (!bkSelectedFile) return showBkErr('bkErr3', 'Please upload your payment screenshot.');
+    await submitBooking();
+  }
+}
+
+function buildPaymentInfo() {
+  const ci = document.getElementById('bkCheckin').value;
+  const co = document.getElementById('bkCheckout').value;
+  const nights = Math.ceil((new Date(co) - new Date(ci)) / 86400000);
+  const price = ROOM_PRICES[bkRoomKey];
+  const room = ROOMS[bkRoomKey];
+  document.getElementById('bkPayInfo').innerHTML = `
+    <strong>${room.name}</strong><br>
+    ${formatDate(ci)} → ${formatDate(co)} · ${nights} night${nights>1?'s':''}<br>
+    <span class="bk-amount">₱${(price.min * nights).toLocaleString()} – ₱${(price.max * nights).toLocaleString()}</span>
+    <small style="color:var(--muted);font-size:12px">Send payment via GCash or bank transfer.<br>
+    Account details will be sent to your WhatsApp after submission.<br>
+    Then upload your receipt screenshot below.</small>
+  `;
+}
+
+function datesOverlap(ci, co) {
+  // check if proposed dates overlap any approved booking
+  return bkBookedDates.some(b => {
+    if (b.status === 'declined' || b.status === 'refunded') return false;
+    return ci < b.checkout && co > b.checkin;
+  });
+}
+
+async function loadRoomBookings(roomKey) {
+  if (!window._db) return;
+  try {
+    const { collection, getDocs, query, where } = window._fbModules;
+    const q = query(collection(window._db, 'bookings'), where('roomKey', '==', roomKey));
+    const snap = await getDocs(q);
+    bkBookedDates = snap.docs.map(d => d.data());
+  } catch(e) { console.warn('Could not load bookings', e); }
+}
+
+function onDateChange() {
+  const ci = document.getElementById('bkCheckin').value;
+  const co = document.getElementById('bkCheckout').value;
+  if (!ci || !co || ci >= co) return;
+  const overlapping = bkBookedDates.filter(b => {
+    if (b.status === 'declined' || b.status === 'refunded') return false;
+    return ci < b.checkout && co > b.checkin;
+  });
+  const result = document.getElementById('bkAvailResult');
+  if (overlapping.length) {
+    result.innerHTML = `<div class="bk-avail-info">
+      <strong style="color:#c0392b">⚠ Dates not available</strong>
+      <div class="bk-booked-list">
+        ${overlapping.map(b => `<div class="bk-booked-item">Booked: ${formatDate(b.checkin)} → ${formatDate(b.checkout)}</div>`).join('')}
+      </div>
+    </div>`;
+  } else {
+    const nights = Math.ceil((new Date(co) - new Date(ci)) / 86400000);
+    result.innerHTML = `<div class="bk-avail-info">
+      <strong style="color:var(--ocean)">✓ Available!</strong><br>
+      ${nights} night${nights>1?'s':''} · ${formatDate(ci)} to ${formatDate(co)}
+    </div>`;
+  }
+}
+
+function onFileSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  bkSelectedFile = file;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const preview = document.getElementById('bkPreviewImg');
+    preview.src = ev.target.result;
+    preview.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function submitBooking() {
+  const btn = document.getElementById('bkNextBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+  try {
+    const { collection, addDoc, ref, uploadBytes, getDownloadURL } = window._fbModules;
+    // upload screenshot
+    const ext = bkSelectedFile.name.split('.').pop();
+    const refCode = 'BK-' + Date.now();
+    const storageRef = ref(window._storage, `payments/${refCode}.${ext}`);
+    await uploadBytes(storageRef, bkSelectedFile);
+    const screenshotURL = await getDownloadURL(storageRef);
+    // save booking
+    const booking = {
+      refCode,
+      roomKey: bkRoomKey,
+      roomName: ROOMS[bkRoomKey].name,
+      checkin: document.getElementById('bkCheckin').value,
+      checkout: document.getElementById('bkCheckout').value,
+      guestName: document.getElementById('bkName').value.trim(),
+      guestPhone: document.getElementById('bkPhone').value.trim(),
+      guestEmail: document.getElementById('bkEmail').value.trim(),
+      guests: Number(document.getElementById('bkGuests').value),
+      notes: document.getElementById('bkNotes').value.trim(),
+      screenshotURL,
+      status: 'pending',
+      submittedAt: new Date().toISOString(),
+    };
+    await addDoc(collection(window._db, 'bookings'), booking);
+    document.getElementById('bkRefCode').textContent = 'Reference: ' + refCode;
+    bkShowStep(4);
+  } catch(err) {
+    console.error(err);
+    showBkErr('bkErr3', 'Submission failed. Please check your connection and try again.');
+    btn.disabled = false;
+    btn.textContent = 'Submit Booking';
+  }
+}
+
+function showBkErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function hideAllBkErrors() {
+  document.querySelectorAll('.bk-error').forEach(e => e.classList.remove('show'));
+}
+function formatDate(d) {
+  if (!d) return '';
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+</script>
+
+<!-- ROOM PICKER MODAL -->
+<div class="picker-overlay" id="pickerOverlay" onclick="handlePickerOverlay(event)">
+  <div class="picker-modal">
+    <div class="picker-head">
+      <div>
+        <h3>Choose a Room</h3>
+        <p>Select a room to check availability &amp; book</p>
+      </div>
+      <button class="picker-close" onclick="closePicker()">&#x2715;</button>
+    </div>
+    <div class="picker-list" id="pickerList"></div>
+  </div>
+</div>
+
+<script>
+const PICKER_ROOMS = [
+  { tier: 'Standard Rooms', key: 'cocoon-pod',       name: 'Cocoon Pod',          pax: 'Up to 2 guests', price: '&#8369;3,500', range: '&ndash; &#8369;7,500' },
+  { tier: null,             key: 'luxury-couples',   name: 'Luxury Couples Room', pax: 'Up to 3 guests', price: '&#8369;5,400', range: '&ndash; &#8369;10,800' },
+  { tier: null,             key: 'apollo-aeropod',   name: 'Apollo Aeropod',      pax: 'Up to 4 guests', price: '&#8369;4,000', range: '&ndash; &#8369;8,000' },
+  { tier: null,             key: 'cupola',           name: 'Cupola',              pax: 'Up to 5 guests', price: '&#8369;4,600', range: '&ndash; &#8369;9,200' },
+  { tier: null,             key: 'beachfront-cabin', name: 'Beachfront Cabin',    pax: 'Up to 6 guests', price: '&#8369;5,700', range: '&ndash; &#8369;10,500' },
+  { tier: 'Premium Rooms',  key: 'beach-suite',      name: 'Beach Suite',         pax: '8&ndash;10 guests', price: '&#8369;6,400', range: '&ndash; &#8369;12,800' },
+  { tier: null,             key: 'private-villa',    name: 'Private Villa',       pax: '12&ndash;14 guests', price: '&#8369;7,000', range: '&ndash; &#8369;14,000' },
+  { tier: 'Luxury Pool Villas', key: 'pool-villa-15', name: 'Luxury Pool Villa',  pax: 'Up to 15 guests', price: '&#8369;12,500', range: '&ndash; &#8369;25,000' },
+  { tier: null,             key: 'pool-villa-20',    name: 'Grand Pool Villa',    pax: 'Up to 20 guests', price: '&#8369;15,000', range: '&ndash; &#8369;30,000' },
+];
+
+function openRoomPickerModal() {
+  const list = document.getElementById('pickerList');
+  list.innerHTML = '';
+  PICKER_ROOMS.forEach(room => {
+    if (room.tier) {
+      const tier = document.createElement('div');
+      tier.className = 'picker-tier';
+      tier.textContent = room.tier;
+      list.appendChild(tier);
+    }
+    const firstImg = ROOMS[room.key] && ROOMS[room.key].images[0];
+    const item = document.createElement('div');
+    item.className = 'picker-item';
+    item.onclick = () => { closePicker(); openBooking(room.key); };
+    item.innerHTML = `
+      ${firstImg
+        ? `<img class="picker-item-img" src="${firstImg}" alt="${room.name}">`
+        : `<div class="picker-item-img-ph"></div>`}
+      <div class="picker-item-info">
+        <div class="picker-item-name">${room.name}</div>
+        <div class="picker-item-pax">${room.pax}</div>
+      </div>
+      <div class="picker-item-price">
+        ${room.price}
+        <small>${room.range}</small>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+  document.getElementById('pickerOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePicker() {
+  document.getElementById('pickerOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handlePickerOverlay(e) {
+  if (e.target.id === 'pickerOverlay') closePicker();
 }
 </script>
 
