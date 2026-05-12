@@ -1,633 +1,923 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — Casobe Beach Resort</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Casobe Beach Resort</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=DM+Sans:wght@300;400;500&display=swap"
+    rel="stylesheet">
 
-<!-- Firebase SDK — same config as index.html -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, doc, updateDoc, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  <!-- Firebase SDK — same config as index.html -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  // ── SAME FIREBASE CONFIG AS index.html ──
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
+    // ── SAME FIREBASE CONFIG AS index.html ──
+    const firebaseConfig = {
+      apiKey: "AIzaSyBKmTOl7lW7RUd7GZpQzsNtBJxbKcKP-UA",
+      authDomain: "casobehotel.firebaseapp.com",
+      projectId: "casobehotel",
+      storageBucket: "casobehotel.firebasestorage.app",
+      messagingSenderId: "204672655696",
+      appId: "1:204672655696:web:d1f28a134656f5ec464c55",
+      measurementId: "G-XY0XSL7GPR"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
-  const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-  window._db = db;
-  window._fbAdmin = { collection, getDocs, doc, updateDoc, orderBy, query };
+    window._db = db;
+    window._fbAdmin = { collection, getDocs, doc, updateDoc, orderBy, query };
 
-  // ── Auth state listener ──
-  // Automatically shows dashboard if already logged in, login screen if not
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      document.getElementById('adminEmail').textContent = user.email;
-      loadBookings();
-    } else {
-      document.getElementById('loginScreen').style.display = 'flex';
-      document.getElementById('dashboard').style.display = 'none';
+    // ── Auth state listener ──
+    // Automatically shows dashboard if already logged in, login screen if not
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        document.getElementById('adminEmail').textContent = user.email;
+        loadBookings();
+      } else {
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('dashboard').style.display = 'none';
+      }
+    });
+
+    // expose auth functions globally
+    window._signIn = (email, password) => signInWithEmailAndPassword(auth, email, password);
+    window._signOut = () => signOut(auth);
+  </script>
+
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-  });
 
-  // expose auth functions globally
-  window._signIn = (email, password) => signInWithEmailAndPassword(auth, email, password);
-  window._signOut = () => signOut(auth);
-</script>
+    :root {
+      --ocean: #3b7d6e;
+      --ocean-light: #5aa898;
+      --bark: #3a2e24;
+      --sand: #f4ede3;
+      --white: #fdfaf7;
+      --muted: #8a7a6c;
+      --bg: #f0ece6;
+      --card: #fff;
+      --border: #e2dbd2;
+      --pending: #d97706;
+      --pending-bg: #fffbeb;
+      --approved: #16a34a;
+      --approved-bg: #f0fdf4;
+      --declined: #dc2626;
+      --declined-bg: #fef2f2;
+      --refunded: #7c3aed;
+      --refunded-bg: #f5f3ff;
+    }
 
-<style>
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--bark);
+      min-height: 100vh;
+    }
 
-:root {
-  --ocean: #3b7d6e;
-  --ocean-light: #5aa898;
-  --bark: #3a2e24;
-  --sand: #f4ede3;
-  --white: #fdfaf7;
-  --muted: #8a7a6c;
-  --bg: #f0ece6;
-  --card: #fff;
-  --border: #e2dbd2;
-  --pending: #d97706;
-  --pending-bg: #fffbeb;
-  --approved: #16a34a;
-  --approved-bg: #f0fdf4;
-  --declined: #dc2626;
-  --declined-bg: #fef2f2;
-  --refunded: #7c3aed;
-  --refunded-bg: #f5f3ff;
-}
+    /* ── LOGIN ── */
+    #loginScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: linear-gradient(135deg, #1a3d30 0%, #0f2920 100%);
+    }
 
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--bg);
-  color: var(--bark);
-  min-height: 100vh;
-}
+    .login-box {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+    }
 
-/* ── LOGIN ── */
-#loginScreen {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background: linear-gradient(135deg, #1a3d30 0%, #0f2920 100%);
-}
+    .login-box h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-weight: 400;
+      color: var(--bark);
+      margin-bottom: 4px;
+    }
 
-.login-box {
-  background: var(--white);
-  border-radius: 20px;
-  padding: 40px 36px;
-  width: 100%;
-  max-width: 360px;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.3);
-}
+    .login-box p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
 
-.login-box h1 {
-  font-family: 'Playfair Display', serif;
-  font-size: 26px;
-  font-weight: 400;
-  color: var(--bark);
-  margin-bottom: 4px;
-}
-.login-box p { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+    .login-field {
+      margin-bottom: 16px;
+    }
 
-.login-field { margin-bottom: 16px; }
-.login-field label {
-  display: block;
-  font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
-  color: var(--muted); margin-bottom: 6px;
-}
-.login-field input {
-  width: 100%; padding: 12px 14px;
-  border: 1px solid var(--border); border-radius: 10px;
-  font-family: 'DM Sans', sans-serif; font-size: 14px;
-  outline: none; transition: border-color 0.2s;
-}
-.login-field input:focus { border-color: var(--ocean); }
+    .login-field label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
 
-.login-btn {
-  width: 100%; padding: 13px;
-  background: var(--ocean); color: #fff;
-  border: none; border-radius: 10px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px; letter-spacing: 0.05em;
-  cursor: pointer; transition: background 0.2s;
-  margin-top: 8px;
-}
-.login-btn:hover { background: #2d6458; }
-.login-err {
-  font-size: 12px; color: #dc2626;
-  text-align: center; margin-top: 10px; display: none;
-}
-.login-err.show { display: block; }
+    .login-field input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
 
-/* ── DASHBOARD ── */
-#dashboard { display: none; min-height: 100vh; }
+    .login-field input:focus {
+      border-color: var(--ocean);
+    }
 
-.adm-nav {
-  background: #0f2920;
-  padding: 0 24px;
-  display: flex; align-items: center; justify-content: space-between;
-  height: 56px; position: sticky; top: 0; z-index: 100;
-}
-.adm-nav-logo {
-  font-family: 'Playfair Display', serif;
-  font-size: 16px; color: #f4ede3;
-}
-.adm-nav-logo span { font-size: 11px; color: rgba(244,237,227,0.4); display: block; letter-spacing: 0.1em; }
-.adm-logout {
-  font-size: 12px; color: rgba(244,237,227,0.5);
-  background: none; border: 1px solid rgba(244,237,227,0.15);
-  padding: 6px 14px; border-radius: 20px; cursor: pointer;
-  transition: background 0.2s;
-}
-.adm-logout:hover { background: rgba(244,237,227,0.08); color: rgba(244,237,227,0.8); }
+    .login-btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--ocean);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 8px;
+    }
 
-.adm-body { padding: 24px; max-width: 1100px; margin: 0 auto; }
+    .login-btn:hover {
+      background: #2d6458;
+    }
 
-/* stats bar */
-.adm-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
-  margin-bottom: 24px;
-}
-.stat-card {
-  background: var(--card);
-  border-radius: 12px;
-  padding: 16px 18px;
-  border: 1px solid var(--border);
-}
-.stat-card .stat-val {
-  font-family: 'Playfair Display', serif;
-  font-size: 28px; color: var(--bark);
-}
-.stat-card .stat-label {
-  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--muted); margin-top: 2px;
-}
+    .login-err {
+      font-size: 12px;
+      color: #dc2626;
+      text-align: center;
+      margin-top: 10px;
+      display: none;
+    }
 
-/* filters */
-.adm-filters {
-  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px;
-  align-items: center;
-}
-.filter-btn {
-  font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
-  padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border);
-  background: var(--card); color: var(--muted); cursor: pointer;
-  transition: all 0.15s;
-}
-.filter-btn.active { background: var(--ocean); color: #fff; border-color: var(--ocean); }
+    .login-err.show {
+      display: block;
+    }
 
-.adm-refresh {
-  margin-left: auto;
-  font-size: 12px; color: var(--ocean);
-  background: none; border: 1px solid var(--ocean);
-  padding: 7px 16px; border-radius: 20px; cursor: pointer;
-  transition: background 0.15s;
-}
-.adm-refresh:hover { background: #f0f9f5; }
+    /* ── DASHBOARD ── */
+    #dashboard {
+      display: none;
+      min-height: 100vh;
+    }
 
-/* table */
-.adm-table-wrap {
-  background: var(--card);
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  overflow: hidden;
-}
-.adm-table {
-  width: 100%; border-collapse: collapse;
-}
-.adm-table th {
-  text-align: left;
-  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
-  color: var(--muted); font-weight: 500;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  background: #faf7f3;
-}
-.adm-table td {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-  font-size: 13px; vertical-align: middle;
-}
-.adm-table tr:last-child td { border-bottom: none; }
-.adm-table tr { cursor: pointer; transition: background 0.15s; }
-.adm-table tr:hover td { background: #faf7f3; }
+    .adm-nav {
+      background: #0f2920;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
 
-.adm-table .room-name { font-weight: 500; color: var(--bark); }
-.adm-table .guest-name { color: var(--bark); }
-.adm-table .dates { font-size: 12px; color: var(--muted); }
-.adm-table .ref { font-size: 11px; color: var(--muted); font-family: monospace; }
+    .adm-nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      color: #f4ede3;
+    }
 
-.badge {
-  display: inline-block;
-  font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
-  padding: 3px 10px; border-radius: 20px; font-weight: 500;
-}
-.badge-pending  { background: var(--pending-bg);  color: var(--pending);  }
-.badge-approved { background: var(--approved-bg); color: var(--approved); }
-.badge-declined { background: var(--declined-bg); color: var(--declined); }
-.badge-refunded { background: var(--refunded-bg); color: var(--refunded); }
+    .adm-nav-logo span {
+      font-size: 11px;
+      color: rgba(244, 237, 227, 0.4);
+      display: block;
+      letter-spacing: 0.1em;
+    }
 
-.adm-empty {
-  text-align: center; padding: 60px 20px;
-  color: var(--muted); font-size: 14px;
-}
+    .adm-logout {
+      font-size: 12px;
+      color: rgba(244, 237, 227, 0.5);
+      background: none;
+      border: 1px solid rgba(244, 237, 227, 0.15);
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
 
-/* ── BOOKING DETAIL MODAL ── */
-.detail-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(5,10,8,0.72); backdrop-filter: blur(4px);
-  z-index: 200; align-items: center; justify-content: center; padding: 16px;
-}
-.detail-overlay.open { display: flex; }
+    .adm-logout:hover {
+      background: rgba(244, 237, 227, 0.08);
+      color: rgba(244, 237, 227, 0.8);
+    }
 
-.detail-modal {
-  background: var(--white);
-  border-radius: 20px;
-  width: 100%; max-width: 640px;
-  max-height: 92vh;
-  display: flex; flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 32px 80px rgba(0,0,0,0.3);
-}
+    .adm-body {
+      padding: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
 
-.detail-head {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  padding: 20px 22px 16px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.detail-head h3 {
-  font-family: 'Playfair Display', serif;
-  font-size: 20px; font-weight: 400; color: var(--bark);
-}
-.detail-head .ref-tag { font-size: 11px; color: var(--muted); font-family: monospace; margin-top: 3px; }
-.detail-close {
-  width: 34px; height: 34px; border-radius: 50%;
-  border: 1px solid var(--border); background: none;
-  font-size: 15px; cursor: pointer; color: var(--muted);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; transition: background 0.2s;
-}
-.detail-close:hover { background: var(--bg); }
+    /* stats bar */
+    .adm-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
 
-.detail-body {
-  overflow-y: auto; flex: 1; padding: 20px 22px;
-  display: flex; flex-direction: column; gap: 20px;
-}
+    .stat-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 16px 18px;
+      border: 1px solid var(--border);
+    }
 
-.detail-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-}
-@media (max-width: 480px) { .detail-grid { grid-template-columns: 1fr; } }
+    .stat-card .stat-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      color: var(--bark);
+    }
 
-.detail-field label {
-  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--muted); display: block; margin-bottom: 3px;
-}
-.detail-field p {
-  font-size: 14px; color: var(--bark); line-height: 1.5;
-}
+    .stat-card .stat-label {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 2px;
+    }
 
-/* screenshot */
-.screenshot-wrap {
-  border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
-}
-.screenshot-label {
-  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--muted); padding: 10px 14px;
-  border-bottom: 1px solid var(--border); background: #faf7f3;
-}
-.screenshot-wrap img {
-  width: 100%; display: block;
-  max-height: 340px; object-fit: contain;
-  background: #111; cursor: zoom-in;
-}
-.screenshot-wrap .no-screenshot {
-  padding: 24px; text-align: center;
-  font-size: 13px; color: var(--muted);
-}
-.screenshot-open-link {
-  display: block; text-align: center;
-  font-size: 12px; color: var(--ocean); padding: 8px;
-  text-decoration: none; border-top: 1px solid var(--border);
-}
-.screenshot-open-link:hover { background: #f0f9f5; }
+    /* filters */
+    .adm-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      align-items: center;
+    }
 
-/* action buttons */
-.detail-actions {
-  display: flex; gap: 10px; flex-wrap: wrap;
-  flex-shrink: 0; padding: 14px 22px;
-  border-top: 1px solid var(--border);
-  background: var(--white);
-}
-.action-btn {
-  flex: 1; min-width: 100px;
-  padding: 12px 10px; border-radius: 10px; border: none;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
-  cursor: pointer; transition: opacity 0.15s, filter 0.15s;
-  font-weight: 500;
-}
-.action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.action-btn:hover:not(:disabled) { filter: brightness(0.92); }
+    .filter-btn {
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 7px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
 
-.btn-approve { background: var(--approved-bg); color: var(--approved); border: 1px solid rgba(22,163,74,0.25); }
-.btn-decline { background: var(--declined-bg); color: var(--declined); border: 1px solid rgba(220,38,38,0.25); }
-.btn-refund  { background: var(--refunded-bg); color: var(--refunded); border: 1px solid rgba(124,58,237,0.25); }
+    .filter-btn.active {
+      background: var(--ocean);
+      color: #fff;
+      border-color: var(--ocean);
+    }
 
-.action-status-msg {
-  width: 100%; text-align: center; font-size: 12px;
-  color: var(--muted); padding-top: 4px; display: none;
-}
+    .adm-refresh {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--ocean);
+      background: none;
+      border: 1px solid var(--ocean);
+      padding: 7px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
 
-/* image zoom overlay */
-.img-zoom-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.92); z-index: 400;
-  align-items: center; justify-content: center;
-  cursor: zoom-out;
-}
-.img-zoom-overlay.open { display: flex; }
-.img-zoom-overlay img {
-  max-width: 95vw; max-height: 95vh;
-  object-fit: contain;
-}
+    .adm-refresh:hover {
+      background: #f0f9f5;
+    }
 
-/* loading */
-.adm-loading {
-  text-align: center; padding: 48px;
-  color: var(--muted); font-size: 14px;
-}
-</style>
+    /* table */
+    .adm-table-wrap {
+      background: var(--card);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .adm-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .adm-table th {
+      text-align: left;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: #faf7f3;
+    }
+
+    .adm-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    .adm-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .adm-table tr {
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .adm-table tr:hover td {
+      background: #faf7f3;
+    }
+
+    .adm-table .room-name {
+      font-weight: 500;
+      color: var(--bark);
+    }
+
+    .adm-table .guest-name {
+      color: var(--bark);
+    }
+
+    .adm-table .dates {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .adm-table .ref {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: monospace;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .badge-pending {
+      background: var(--pending-bg);
+      color: var(--pending);
+    }
+
+    .badge-approved {
+      background: var(--approved-bg);
+      color: var(--approved);
+    }
+
+    .badge-declined {
+      background: var(--declined-bg);
+      color: var(--declined);
+    }
+
+    .badge-refunded {
+      background: var(--refunded-bg);
+      color: var(--refunded);
+    }
+
+    .adm-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* ── BOOKING DETAIL MODAL ── */
+    .detail-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 10, 8, 0.72);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .detail-overlay.open {
+      display: flex;
+    }
+
+    .detail-modal {
+      background: var(--white);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 640px;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.3);
+    }
+
+    .detail-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 20px 22px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .detail-head h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--bark);
+    }
+
+    .detail-head .ref-tag {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: monospace;
+      margin-top: 3px;
+    }
+
+    .detail-close {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: none;
+      font-size: 15px;
+      cursor: pointer;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+
+    .detail-close:hover {
+      background: var(--bg);
+    }
+
+    .detail-body {
+      overflow-y: auto;
+      flex: 1;
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 480px) {
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .detail-field label {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .detail-field p {
+      font-size: 14px;
+      color: var(--bark);
+      line-height: 1.5;
+    }
+
+    /* screenshot */
+    .screenshot-wrap {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .screenshot-label {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      background: #faf7f3;
+    }
+
+    .screenshot-wrap img {
+      width: 100%;
+      display: block;
+      max-height: 340px;
+      object-fit: contain;
+      background: #111;
+      cursor: zoom-in;
+    }
+
+    .screenshot-wrap .no-screenshot {
+      padding: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .screenshot-open-link {
+      display: block;
+      text-align: center;
+      font-size: 12px;
+      color: var(--ocean);
+      padding: 8px;
+      text-decoration: none;
+      border-top: 1px solid var(--border);
+    }
+
+    .screenshot-open-link:hover {
+      background: #f0f9f5;
+    }
+
+    /* action buttons */
+    .detail-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+      padding: 14px 22px;
+      border-top: 1px solid var(--border);
+      background: var(--white);
+    }
+
+    .action-btn {
+      flex: 1;
+      min-width: 100px;
+      padding: 12px 10px;
+      border-radius: 10px;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.15s, filter 0.15s;
+      font-weight: 500;
+    }
+
+    .action-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .action-btn:hover:not(:disabled) {
+      filter: brightness(0.92);
+    }
+
+    .btn-approve {
+      background: var(--approved-bg);
+      color: var(--approved);
+      border: 1px solid rgba(22, 163, 74, 0.25);
+    }
+
+    .btn-decline {
+      background: var(--declined-bg);
+      color: var(--declined);
+      border: 1px solid rgba(220, 38, 38, 0.25);
+    }
+
+    .btn-refund {
+      background: var(--refunded-bg);
+      color: var(--refunded);
+      border: 1px solid rgba(124, 58, 237, 0.25);
+    }
+
+    .action-status-msg {
+      width: 100%;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      padding-top: 4px;
+      display: none;
+    }
+
+    /* image zoom overlay */
+    .img-zoom-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.92);
+      z-index: 400;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+    }
+
+    .img-zoom-overlay.open {
+      display: flex;
+    }
+
+    .img-zoom-overlay img {
+      max-width: 95vw;
+      max-height: 95vh;
+      object-fit: contain;
+    }
+
+    /* loading */
+    .adm-loading {
+      text-align: center;
+      padding: 48px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- LOGIN -->
-<div id="loginScreen">
-  <div class="login-box">
-    <h1>Resort Admin</h1>
-    <p>Casobe Beach Resort — Booking Dashboard</p>
-    <div class="login-field">
-      <label>Email</label>
-      <input type="email" id="emailInput" placeholder="admin@casoberesort.com" onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <div class="login-field">
-      <label>Password</label>
-      <input type="password" id="pwInput" placeholder="Your Firebase password" onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign In</button>
-    <p class="login-err" id="loginErr"></p>
-  </div>
-</div>
-
-<!-- DASHBOARD -->
-<div id="dashboard">
-  <nav class="adm-nav">
-    <div class="adm-nav-logo">
-      Casobe Beach Resort
-      <span>Admin Dashboard</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px">
-      <span style="font-size:11px;color:rgba(244,237,227,0.4)" id="adminEmail"></span>
-      <button class="adm-logout" onclick="doLogout()">Sign Out</button>
-    </div>
-  </nav>
-
-  <div class="adm-body">
-    <!-- Stats -->
-    <div class="adm-stats">
-      <div class="stat-card">
-        <div class="stat-val" id="statTotal">—</div>
-        <div class="stat-label">Total Bookings</div>
+  <!-- LOGIN -->
+  <div id="loginScreen">
+    <div class="login-box">
+      <h1>Resort Admin</h1>
+      <p>Casobe Beach Resort — Booking Dashboard</p>
+      <div class="login-field">
+        <label>Email</label>
+        <input type="email" id="emailInput" placeholder="admin@casoberesort.com"
+          onkeydown="if(event.key==='Enter')doLogin()">
       </div>
-      <div class="stat-card">
-        <div class="stat-val" style="color:var(--pending)" id="statPending">—</div>
-        <div class="stat-label">Pending Review</div>
+      <div class="login-field">
+        <label>Password</label>
+        <input type="password" id="pwInput" placeholder="Your Firebase password"
+          onkeydown="if(event.key==='Enter')doLogin()">
       </div>
-      <div class="stat-card">
-        <div class="stat-val" style="color:var(--approved)" id="statApproved">—</div>
-        <div class="stat-label">Approved</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val" style="color:var(--declined)" id="statDeclined">—</div>
-        <div class="stat-label">Declined</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-val" style="color:var(--refunded)" id="statRefunded">—</div>
-        <div class="stat-label">Refunded</div>
-      </div>
-    </div>
-
-    <!-- Filters -->
-    <div class="adm-filters">
-      <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
-      <button class="filter-btn" onclick="setFilter('pending', this)">Pending</button>
-      <button class="filter-btn" onclick="setFilter('approved', this)">Approved</button>
-      <button class="filter-btn" onclick="setFilter('declined', this)">Declined</button>
-      <button class="filter-btn" onclick="setFilter('refunded', this)">Refunded</button>
-      <button class="adm-refresh" onclick="loadBookings()">↻ Refresh</button>
-    </div>
-
-    <!-- Table -->
-    <div class="adm-table-wrap" id="tableWrap">
-      <div class="adm-loading">Loading bookings…</div>
+      <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign In</button>
+      <p class="login-err" id="loginErr"></p>
     </div>
   </div>
-</div>
 
-<!-- BOOKING DETAIL MODAL -->
-<div class="detail-overlay" id="detailOverlay" onclick="handleDetailOverlay(event)">
-  <div class="detail-modal">
-    <div class="detail-head">
-      <div>
-        <h3 id="dtRoomName">—</h3>
-        <div class="ref-tag" id="dtRef">—</div>
+  <!-- DASHBOARD -->
+  <div id="dashboard">
+    <nav class="adm-nav">
+      <div class="adm-nav-logo">
+        Casobe Beach Resort
+        <span>Admin Dashboard</span>
       </div>
-      <button class="detail-close" onclick="closeDetail()">✕</button>
-    </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:11px;color:rgba(244,237,227,0.4)" id="adminEmail"></span>
+        <button class="adm-logout" onclick="doLogout()">Sign Out</button>
+      </div>
+    </nav>
 
-    <div class="detail-body">
-      <div class="detail-grid">
-        <div class="detail-field">
-          <label>Guest Name</label>
-          <p id="dtName">—</p>
+    <div class="adm-body">
+      <!-- Stats -->
+      <div class="adm-stats">
+        <div class="stat-card">
+          <div class="stat-val" id="statTotal">—</div>
+          <div class="stat-label">Total Bookings</div>
         </div>
-        <div class="detail-field">
-          <label>Status</label>
-          <p id="dtStatus">—</p>
+        <div class="stat-card">
+          <div class="stat-val" style="color:var(--pending)" id="statPending">—</div>
+          <div class="stat-label">Pending Review</div>
         </div>
-        <div class="detail-field">
-          <label>Phone / WhatsApp</label>
-          <p id="dtPhone">—</p>
+        <div class="stat-card">
+          <div class="stat-val" style="color:var(--approved)" id="statApproved">—</div>
+          <div class="stat-label">Approved</div>
         </div>
-        <div class="detail-field">
-          <label>Email</label>
-          <p id="dtEmail">—</p>
+        <div class="stat-card">
+          <div class="stat-val" style="color:var(--declined)" id="statDeclined">—</div>
+          <div class="stat-label">Declined</div>
         </div>
-        <div class="detail-field">
-          <label>Check-in</label>
-          <p id="dtCheckin">—</p>
-        </div>
-        <div class="detail-field">
-          <label>Check-out</label>
-          <p id="dtCheckout">—</p>
-        </div>
-        <div class="detail-field">
-          <label>Guests</label>
-          <p id="dtGuests">—</p>
-        </div>
-        <div class="detail-field">
-          <label>Submitted</label>
-          <p id="dtSubmitted">—</p>
+        <div class="stat-card">
+          <div class="stat-val" style="color:var(--refunded)" id="statRefunded">—</div>
+          <div class="stat-label">Refunded</div>
         </div>
       </div>
 
-      <div class="detail-field">
-        <label>Special Requests</label>
-        <p id="dtNotes" style="color:var(--muted);font-size:13px">—</p>
+      <!-- Filters -->
+      <div class="adm-filters">
+        <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+        <button class="filter-btn" onclick="setFilter('pending', this)">Pending</button>
+        <button class="filter-btn" onclick="setFilter('approved', this)">Approved</button>
+        <button class="filter-btn" onclick="setFilter('declined', this)">Declined</button>
+        <button class="filter-btn" onclick="setFilter('refunded', this)">Refunded</button>
+        <button class="adm-refresh" onclick="loadBookings()">↻ Refresh</button>
       </div>
 
-      <!-- Payment Screenshot -->
-      <div class="screenshot-wrap">
-        <div class="screenshot-label">Payment Screenshot</div>
-        <div id="dtScreenshotWrap"></div>
+      <!-- Table -->
+      <div class="adm-table-wrap" id="tableWrap">
+        <div class="adm-loading">Loading bookings…</div>
       </div>
-    </div>
-
-    <div class="detail-actions" id="dtActions">
-      <button class="action-btn btn-approve" id="btnApprove" onclick="updateStatus('approved')">✓ Approve</button>
-      <button class="action-btn btn-decline" id="btnDecline" onclick="updateStatus('declined')">✕ Decline</button>
-      <button class="action-btn btn-refund"  id="btnRefund"  onclick="updateStatus('refunded')">↩ Refund</button>
-      <p class="action-status-msg" id="actionMsg"></p>
     </div>
   </div>
-</div>
 
-<!-- Image zoom -->
-<div class="img-zoom-overlay" id="imgZoom" onclick="document.getElementById('imgZoom').classList.remove('open')">
-  <img id="imgZoomSrc" src="" alt="">
-</div>
+  <!-- BOOKING DETAIL MODAL -->
+  <div class="detail-overlay" id="detailOverlay" onclick="handleDetailOverlay(event)">
+    <div class="detail-modal">
+      <div class="detail-head">
+        <div>
+          <h3 id="dtRoomName">—</h3>
+          <div class="ref-tag" id="dtRef">—</div>
+        </div>
+        <button class="detail-close" onclick="closeDetail()">✕</button>
+      </div>
 
-<script>
-// ── Auth ──
-async function doLogin() {
-  const email = document.getElementById('emailInput').value.trim();
-  const pw    = document.getElementById('pwInput').value;
-  const err   = document.getElementById('loginErr');
-  const btn   = document.getElementById('loginBtn');
+      <div class="detail-body">
+        <div class="detail-grid">
+          <div class="detail-field">
+            <label>Guest Name</label>
+            <p id="dtName">—</p>
+          </div>
+          <div class="detail-field">
+            <label>Status</label>
+            <p id="dtStatus">—</p>
+          </div>
+          <div class="detail-field">
+            <label>Phone / WhatsApp</label>
+            <p id="dtPhone">—</p>
+          </div>
+          <div class="detail-field">
+            <label>Payment Method</label>
+            <p id="dtPaymentMethod">—</p>
+          </div>
+          <div class="detail-field">
+            <label>Email</label>
+            <p id="dtEmail">—</p>
+          </div>
+          <div class="detail-field">
+            <label>Check-in</label>
+            <p id="dtCheckin">—</p>
+          </div>
+          <div class="detail-field">
+            <label>Check-out</label>
+            <p id="dtCheckout">—</p>
+          </div>
+          <div class="detail-field">
+            <label>Guests</label>
+            <p id="dtGuests">—</p>
+          </div>
+          <div class="detail-field">
+            <label>Total Amount</label>
+            <p id="dtTotal" style="font-weight:bold; color:var(--ocean); font-size:16px">—</p>
+          </div>
+          <div class="detail-field">
+            <label>Submitted</label>
+            <p id="dtSubmitted">—</p>
+          </div>
+        </div>
 
-  if (!email || !pw) {
-    err.textContent = 'Please enter your email and password.';
-    err.classList.add('show');
-    return;
-  }
+        <div class="detail-field">
+          <label>Special Requests</label>
+          <p id="dtNotes" style="color:var(--muted);font-size:13px">—</p>
+        </div>
 
-  btn.textContent = 'Signing in…';
-  btn.disabled = true;
-  err.classList.remove('show');
+        <!-- Payment Screenshot -->
+        <div class="screenshot-wrap">
+          <div class="screenshot-label">Payment Screenshot</div>
+          <div id="dtScreenshotWrap"></div>
+        </div>
+      </div>
 
-  try {
-    await window._signIn(email, pw);
-    // onAuthStateChanged in the module will handle showing the dashboard
-  } catch (e) {
-    btn.textContent = 'Sign In';
-    btn.disabled = false;
-    err.textContent = e.code === 'auth/invalid-credential'
-      ? 'Incorrect email or password.'
-      : e.code === 'auth/too-many-requests'
-      ? 'Too many attempts. Try again later.'
-      : 'Login failed: ' + e.message;
-    err.classList.add('show');
-  }
-}
+      <div class="detail-actions" id="dtActions">
+        <button class="action-btn btn-approve" id="btnApprove" onclick="updateStatus('approved')">✓ Approve</button>
+        <button class="action-btn btn-decline" id="btnDecline" onclick="updateStatus('declined')">✕ Decline</button>
+        <button class="action-btn btn-refund" id="btnRefund" onclick="updateStatus('refunded')">↩ Refund</button>
+        <p class="action-status-msg" id="actionMsg"></p>
+      </div>
+    </div>
+  </div>
 
-async function doLogout() {
-  await window._signOut();
-  // onAuthStateChanged will handle showing login screen
-}
+  <!-- Image zoom -->
+  <div class="img-zoom-overlay" id="imgZoom" onclick="document.getElementById('imgZoom').classList.remove('open')">
+    <img id="imgZoomSrc" src="" alt="">
+  </div>
 
-// ── Wait for Firebase ──
-function waitForFirebase() {
-  if (window._db) { loadBookings(); return; }
-  // onAuthStateChanged in module handles this now
-}
+  <script>
+    // ── Auth ──
+    async function doLogin() {
+      const email = document.getElementById('emailInput').value.trim();
+      const pw = document.getElementById('pwInput').value;
+      const err = document.getElementById('loginErr');
+      const btn = document.getElementById('loginBtn');
 
-// ── Bookings data ──
-let allBookings = [];
-let currentFilter = 'all';
-let currentDocId = null;
+      if (!email || !pw) {
+        err.textContent = 'Please enter your email and password.';
+        err.classList.add('show');
+        return;
+      }
 
-async function loadBookings() {
-  if (!window._db) return;
-  document.getElementById('tableWrap').innerHTML = '<div class="adm-loading">Loading bookings…</div>';
-  try {
-    const { collection, getDocs, query, orderBy } = window._fbAdmin;
-    const q = query(collection(window._db, 'bookings'), orderBy('submittedAt', 'desc'));
-    const snap = await getDocs(q);
-    allBookings = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
-    updateStats();
-    renderTable();
-  } catch(e) {
-    document.getElementById('tableWrap').innerHTML = `<div class="adm-loading">Error loading bookings.<br><small>${e.message}</small></div>`;
-  }
-}
+      btn.textContent = 'Signing in…';
+      btn.disabled = true;
+      err.classList.remove('show');
 
-function updateStats() {
-  document.getElementById('statTotal').textContent    = allBookings.length;
-  document.getElementById('statPending').textContent  = allBookings.filter(b=>b.status==='pending').length;
-  document.getElementById('statApproved').textContent = allBookings.filter(b=>b.status==='approved').length;
-  document.getElementById('statDeclined').textContent = allBookings.filter(b=>b.status==='declined').length;
-  document.getElementById('statRefunded').textContent = allBookings.filter(b=>b.status==='refunded').length;
-}
+      try {
+        await window._signIn(email, pw);
+        // onAuthStateChanged in the module will handle showing the dashboard
+      } catch (e) {
+        btn.textContent = 'Sign In';
+        btn.disabled = false;
+        err.textContent = e.code === 'auth/invalid-credential'
+          ? 'Incorrect email or password.'
+          : e.code === 'auth/too-many-requests'
+            ? 'Too many attempts. Try again later.'
+            : 'Login failed: ' + e.message;
+        err.classList.add('show');
+      }
+    }
 
-function setFilter(f, btn) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTable();
-}
+    async function doLogout() {
+      await window._signOut();
+      // onAuthStateChanged will handle showing login screen
+    }
 
-function renderTable() {
-  const filtered = currentFilter === 'all'
-    ? allBookings
-    : allBookings.filter(b => b.status === currentFilter);
+    // ── Wait for Firebase ──
+    function waitForFirebase() {
+      if (window._db) { loadBookings(); return; }
+      // onAuthStateChanged in module handles this now
+    }
 
-  if (!filtered.length) {
-    document.getElementById('tableWrap').innerHTML = `<div class="adm-empty">No ${currentFilter === 'all' ? '' : currentFilter + ' '}bookings found.</div>`;
-    return;
-  }
+    // ── Bookings data ──
+    let allBookings = [];
+    let currentFilter = 'all';
+    let currentDocId = null;
 
-  const rows = filtered.map(b => `
+    async function loadBookings() {
+      if (!window._db) return;
+      document.getElementById('tableWrap').innerHTML = '<div class="adm-loading">Loading bookings…</div>';
+      try {
+        const { collection, getDocs, query, orderBy } = window._fbAdmin;
+        const q = query(collection(window._db, 'bookings'), orderBy('submittedAt', 'desc'));
+        const snap = await getDocs(q);
+        allBookings = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+        updateStats();
+        renderTable();
+      } catch (e) {
+        document.getElementById('tableWrap').innerHTML = `<div class="adm-loading">Error loading bookings.<br><small>${e.message}</small></div>`;
+      }
+    }
+
+    function updateStats() {
+      document.getElementById('statTotal').textContent = allBookings.length;
+      document.getElementById('statPending').textContent = allBookings.filter(b => b.status === 'pending').length;
+      document.getElementById('statApproved').textContent = allBookings.filter(b => b.status === 'approved').length;
+      document.getElementById('statDeclined').textContent = allBookings.filter(b => b.status === 'declined').length;
+      document.getElementById('statRefunded').textContent = allBookings.filter(b => b.status === 'refunded').length;
+    }
+
+    function setFilter(f, btn) {
+      currentFilter = f;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderTable();
+    }
+
+    function renderTable() {
+      const filtered = currentFilter === 'all'
+        ? allBookings
+        : allBookings.filter(b => b.status === currentFilter);
+
+      if (!filtered.length) {
+        document.getElementById('tableWrap').innerHTML = `<div class="adm-empty">No ${currentFilter === 'all' ? '' : currentFilter + ' '}bookings found.</div>`;
+        return;
+      }
+
+      const rows = filtered.map(b => `
     <tr onclick="openDetail('${b._id}')">
       <td><div class="room-name">${b.roomName || '—'}</div></td>
       <td><div class="guest-name">${b.guestName || '—'}</div><div class="ref">${b.refCode || ''}</div></td>
       <td><div class="dates">${fmtDate(b.checkin)} → ${fmtDate(b.checkout)}</div></td>
       <td>${b.guests || '—'}</td>
+      <td style="font-weight:500; color:var(--ocean)">${b.totalAmount ? '₱' + b.totalAmount.toLocaleString() : '—'}</td>
+      <td style="font-size:11px; color:var(--muted)">${b.paymentMethod || '—'}</td>
       <td><span class="badge badge-${b.status}">${b.status}</span></td>
       <td class="dates">${fmtDateTime(b.submittedAt)}</td>
     </tr>
   `).join('');
 
-  document.getElementById('tableWrap').innerHTML = `
+      document.getElementById('tableWrap').innerHTML = `
     <table class="adm-table">
       <thead>
         <tr>
@@ -635,6 +925,8 @@ function renderTable() {
           <th>Guest</th>
           <th>Dates</th>
           <th>Guests</th>
+          <th>Total</th>
+          <th>Method</th>
           <th>Status</th>
           <th>Submitted</th>
         </tr>
@@ -642,103 +934,106 @@ function renderTable() {
       <tbody>${rows}</tbody>
     </table>
   `;
-}
+    }
 
-// ── Detail modal ──
-function openDetail(docId) {
-  const b = allBookings.find(x => x._id === docId);
-  if (!b) return;
-  currentDocId = docId;
+    // ── Detail modal ──
+    function openDetail(docId) {
+      const b = allBookings.find(x => x._id === docId);
+      if (!b) return;
+      currentDocId = docId;
 
-  document.getElementById('dtRoomName').textContent = b.roomName || '—';
-  document.getElementById('dtRef').textContent = b.refCode || docId;
-  document.getElementById('dtName').textContent = b.guestName || '—';
-  document.getElementById('dtStatus').innerHTML = `<span class="badge badge-${b.status}">${b.status}</span>`;
-  document.getElementById('dtPhone').innerHTML = b.guestPhone ? `<a href="https://wa.me/${b.guestPhone.replace(/\D/g,'')}" target="_blank" style="color:var(--ocean)">${b.guestPhone}</a>` : '—';
-  document.getElementById('dtEmail').textContent = b.guestEmail || '—';
-  document.getElementById('dtCheckin').textContent = fmtDate(b.checkin);
-  document.getElementById('dtCheckout').textContent = fmtDate(b.checkout);
-  document.getElementById('dtGuests').textContent = b.guests || '—';
-  document.getElementById('dtSubmitted').textContent = fmtDateTime(b.submittedAt);
-  document.getElementById('dtNotes').textContent = b.notes || 'None';
+      document.getElementById('dtRoomName').textContent = b.roomName || '—';
+      document.getElementById('dtRef').textContent = b.refCode || docId;
+      document.getElementById('dtName').textContent = b.guestName || '—';
+      document.getElementById('dtStatus').innerHTML = `<span class="badge badge-${b.status}">${b.status}</span>`;
+      document.getElementById('dtPhone').innerHTML = b.guestPhone ? `<a href="https://wa.me/${b.guestPhone.replace(/\D/g, '')}" target="_blank" style="color:var(--ocean)">${b.guestPhone}</a>` : '—';
+      document.getElementById('dtPaymentMethod').textContent = b.paymentMethod || '—';
+      document.getElementById('dtEmail').textContent = b.guestEmail || '—';
+      document.getElementById('dtCheckin').textContent = fmtDate(b.checkin);
+      document.getElementById('dtCheckout').textContent = fmtDate(b.checkout);
+      document.getElementById('dtGuests').textContent = b.guests || '—';
+      document.getElementById('dtTotal').textContent = b.totalAmount ? '₱' + b.totalAmount.toLocaleString() : '—';
+      document.getElementById('dtSubmitted').textContent = fmtDateTime(b.submittedAt);
+      document.getElementById('dtNotes').textContent = b.notes || 'None';
 
-  // screenshot
-  const wrap = document.getElementById('dtScreenshotWrap');
-  if (b.screenshotURL) {
-    wrap.innerHTML = `
+      // screenshot
+      const wrap = document.getElementById('dtScreenshotWrap');
+      if (b.screenshotURL) {
+        wrap.innerHTML = `
       <img src="${b.screenshotURL}" alt="Payment screenshot" onclick="zoomImg('${b.screenshotURL}')">
       <a class="screenshot-open-link" href="${b.screenshotURL}" target="_blank">↗ Open full size</a>
     `;
-  } else {
-    wrap.innerHTML = '<div class="no-screenshot">No screenshot uploaded.</div>';
-  }
+      } else {
+        wrap.innerHTML = '<div class="no-screenshot">No screenshot uploaded.</div>';
+      }
 
-  // action buttons
-  document.getElementById('btnApprove').disabled = b.status === 'approved';
-  document.getElementById('btnDecline').disabled = b.status === 'declined';
-  document.getElementById('btnRefund').disabled  = b.status === 'refunded';
-  document.getElementById('actionMsg').style.display = 'none';
+      // action buttons
+      document.getElementById('btnApprove').disabled = b.status === 'approved';
+      document.getElementById('btnDecline').disabled = b.status === 'declined';
+      document.getElementById('btnRefund').disabled = b.status === 'refunded';
+      document.getElementById('actionMsg').style.display = 'none';
 
-  document.getElementById('detailOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
+      document.getElementById('detailOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
 
-function closeDetail() {
-  document.getElementById('detailOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-  currentDocId = null;
-}
+    function closeDetail() {
+      document.getElementById('detailOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+      currentDocId = null;
+    }
 
-function handleDetailOverlay(e) {
-  if (e.target.id === 'detailOverlay') closeDetail();
-}
+    function handleDetailOverlay(e) {
+      if (e.target.id === 'detailOverlay') closeDetail();
+    }
 
-async function updateStatus(newStatus) {
-  if (!currentDocId || !window._db) return;
-  const { doc, updateDoc } = window._fbAdmin;
-  const btns = document.querySelectorAll('.action-btn');
-  btns.forEach(b => b.disabled = true);
-  const msg = document.getElementById('actionMsg');
-  msg.style.display = 'block';
-  msg.textContent = 'Updating…';
-  try {
-    await updateDoc(doc(window._db, 'bookings', currentDocId), {
-      status: newStatus,
-      updatedAt: new Date().toISOString()
-    });
-    // update local data
-    const idx = allBookings.findIndex(b => b._id === currentDocId);
-    if (idx !== -1) allBookings[idx].status = newStatus;
-    updateStats();
-    renderTable();
-    // update modal
-    document.getElementById('dtStatus').innerHTML = `<span class="badge badge-${newStatus}">${newStatus}</span>`;
-    document.getElementById('btnApprove').disabled = newStatus === 'approved';
-    document.getElementById('btnDecline').disabled = newStatus === 'declined';
-    document.getElementById('btnRefund').disabled  = newStatus === 'refunded';
-    msg.textContent = `✓ Status updated to "${newStatus}"`;
-    msg.style.color = 'var(--approved)';
-  } catch(e) {
-    msg.textContent = 'Failed to update. Try again.';
-    msg.style.color = 'var(--declined)';
-    btns.forEach(b => b.disabled = false);
-  }
-}
+    async function updateStatus(newStatus) {
+      if (!currentDocId || !window._db) return;
+      const { doc, updateDoc } = window._fbAdmin;
+      const btns = document.querySelectorAll('.action-btn');
+      btns.forEach(b => b.disabled = true);
+      const msg = document.getElementById('actionMsg');
+      msg.style.display = 'block';
+      msg.textContent = 'Updating…';
+      try {
+        await updateDoc(doc(window._db, 'bookings', currentDocId), {
+          status: newStatus,
+          updatedAt: new Date().toISOString()
+        });
+        // update local data
+        const idx = allBookings.findIndex(b => b._id === currentDocId);
+        if (idx !== -1) allBookings[idx].status = newStatus;
+        updateStats();
+        renderTable();
+        // update modal
+        document.getElementById('dtStatus').innerHTML = `<span class="badge badge-${newStatus}">${newStatus}</span>`;
+        document.getElementById('btnApprove').disabled = newStatus === 'approved';
+        document.getElementById('btnDecline').disabled = newStatus === 'declined';
+        document.getElementById('btnRefund').disabled = newStatus === 'refunded';
+        msg.textContent = `✓ Status updated to "${newStatus}"`;
+        msg.style.color = 'var(--approved)';
+      } catch (e) {
+        msg.textContent = 'Failed to update. Try again.';
+        msg.style.color = 'var(--declined)';
+        btns.forEach(b => b.disabled = false);
+      }
+    }
 
-function zoomImg(src) {
-  document.getElementById('imgZoomSrc').src = src;
-  document.getElementById('imgZoom').classList.add('open');
-}
+    function zoomImg(src) {
+      document.getElementById('imgZoomSrc').src = src;
+      document.getElementById('imgZoom').classList.add('open');
+    }
 
-// ── Helpers ──
-function fmtDate(d) {
-  if (!d) return '—';
-  return new Date(d + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-function fmtDateTime(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-}
-</script>
+    // ── Helpers ──
+    function fmtDate(d) {
+      if (!d) return '—';
+      return new Date(d + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    function fmtDateTime(iso) {
+      if (!iso) return '—';
+      return new Date(iso).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+  </script>
 </body>
+
 </html>

@@ -1928,6 +1928,17 @@ function handlePromoOverlayClick(e) {
       <div class="bk-step" id="bkStep3">
         <p class="bk-step-label">Step 3 of 3 — Payment</p>
         <div class="bk-payment-info" id="bkPayInfo"></div>
+        
+        <div class="bk-field">
+          <label>Select Payment Method</label>
+          <select id="bkPaymentMethod" onchange="onPaymentMethodChange()">
+            <option value="GCash">GCash</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+          </select>
+        </div>
+
+        <div id="bkMethodDetails"></div>
+
         <div class="bk-field">
           <label>Upload Payment Screenshot</label>
           <div class="bk-upload-zone" id="bkDropzone">
@@ -2057,19 +2068,44 @@ async function bkNext() {
 function buildPaymentInfo() {
   const ci = document.getElementById('bkCheckin').value;
   const co = document.getElementById('bkCheckout').value;
+  const guests = Number(document.getElementById('bkGuests').value) || 1;
   const nights = Math.ceil((new Date(co) - new Date(ci)) / 86400000);
   const nightlyRate = ROOM_PRICES[bkRoomKey];
-  const total = nightlyRate * nights;
+  const total = nightlyRate * nights * guests;
   const room = ROOMS[bkRoomKey];
   document.getElementById('bkPayInfo').innerHTML = `
     <strong>${room.name}</strong><br>
     ${formatDate(ci)} → ${formatDate(co)} · ${nights} night${nights>1?'s':''}<br>
-    <small style="color:var(--muted);font-size:12px;margin-bottom:4px;display:block">₱${nightlyRate.toLocaleString()} × ${nights} night${nights>1?'s':''}</small>
+    <small style="color:var(--muted);font-size:12px;margin-bottom:4px;display:block">
+      ₱${nightlyRate.toLocaleString()} × ${guests} guest${guests>1?'s':''} × ${nights} night${nights>1?'s':''}
+    </small>
     <span class="bk-amount">₱${total.toLocaleString()}</span>
-    <small style="color:var(--muted);font-size:12px">Send payment via GCash or bank transfer.<br>
-    Account details will be sent to your WhatsApp after submission.<br>
-    Then upload your receipt screenshot below.</small>
   `;
+  onPaymentMethodChange(); // update details box
+}
+
+function onPaymentMethodChange() {
+  const method = document.getElementById('bkPaymentMethod').value;
+  const details = document.getElementById('bkMethodDetails');
+  if (method === 'GCash') {
+    details.innerHTML = `
+      <div style="background: #f0f7ff; border: 1px solid #cce3ff; border-radius: 10px; padding: 14px; margin-top: 10px; font-size: 13px;">
+        <p style="color: #007bff; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+          <span style="background: #007bff; color: #fff; width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px;">G</span> 
+          GCash Details
+        </p>
+        <p style="margin: 2px 0;">Account Name: <strong>Gerardine Zamudio</strong></p>
+        <p style="margin: 2px 0;">Account Number: <strong>0956 640 4092</strong></p>
+      </div>
+    `;
+  } else {
+    details.innerHTML = `
+      <div style="background: #f4f4f4; border: 1px solid #ddd; border-radius: 10px; padding: 14px; margin-top: 10px; font-size: 13px;">
+        <p style="color: var(--muted); font-weight: 600; margin-bottom: 4px;">Bank Transfer</p>
+        <p style="color: var(--muted); font-style: italic;">Please contact us via WhatsApp for bank details or use GCash for faster processing.</p>
+      </div>
+    `;
+  }
 }
 
 function datesOverlap(ci, co) {
@@ -2143,9 +2179,10 @@ async function submitBooking() {
     // save booking
     const ci = document.getElementById('bkCheckin').value;
     const co = document.getElementById('bkCheckout').value;
+    const guests = Number(document.getElementById('bkGuests').value) || 1;
     const nights = Math.ceil((new Date(co) - new Date(ci)) / 86400000);
     const nightlyRate = ROOM_PRICES[bkRoomKey];
-    const totalAmount = nightlyRate * nights;
+    const totalAmount = nightlyRate * nights * guests;
     const booking = {
       refCode,
       roomKey: bkRoomKey,
@@ -2154,11 +2191,12 @@ async function submitBooking() {
       checkout: co,
       nights,
       nightlyRate,
+      guests,
       totalAmount,
+      paymentMethod: document.getElementById('bkPaymentMethod').value,
       guestName: document.getElementById('bkName').value.trim(),
       guestPhone: document.getElementById('bkPhone').value.trim(),
       guestEmail: document.getElementById('bkEmail').value.trim(),
-      guests: Number(document.getElementById('bkGuests').value),
       notes: document.getElementById('bkNotes').value.trim(),
       screenshotURL,
       status: 'pending',

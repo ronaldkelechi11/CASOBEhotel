@@ -4,6 +4,14 @@ A full record of the build process for the **Buracaidelaiya / Casobe Beach Resor
 
 ---
 
+## May 12 — Payment Account Details
+
+**GCash:**
+- **Account Name:** Gerardine Zamudio
+- **Account Number:** 0956 640 4092
+
+---
+
 ## May 9 — Storage Options Discussed
 
 **Firebase (original plan):**
@@ -18,7 +26,7 @@ A full record of the build process for the **Buracaidelaiya / Casobe Beach Resor
 **Setup steps:**
 1. Go to Firebase Console → Authentication → Get started
 2. Enable **Email/Password** provider
-3. Click **Add user** → set `admin@casoberesort.com` + strong password
+3. Click **Add user** → set `admin@casoberesort.online` ycuuyyuyrdsrw4 + strong password
 4. Use those credentials to log into `admin.html`
 
 **Firestore Security Rule** (paste into Firestore → Rules):
