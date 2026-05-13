@@ -12,7 +12,7 @@
   <!-- Firebase SDK — same config as index.html -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, updateDoc, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     // ── SAME FIREBASE CONFIG AS index.html ──
@@ -31,7 +31,7 @@
     const auth = getAuth(app);
 
     window._db = db;
-    window._fbAdmin = { collection, getDocs, doc, updateDoc, orderBy, query };
+    window._fbAdmin = { collection, getDocs, doc, updateDoc, deleteDoc, orderBy, query };
 
     // ── Auth state listener ──
     // Automatically shows dashboard if already logged in, login screen if not
@@ -616,6 +616,12 @@
       border: 1px solid rgba(124, 58, 237, 0.25);
     }
 
+    .btn-delete {
+      background: #fff;
+      color: #dc2626;
+      border: 1px solid rgba(220, 38, 38, 0.2);
+    }
+
     .action-status-msg {
       width: 100%;
       text-align: center;
@@ -805,6 +811,7 @@
         <button class="action-btn btn-approve" id="btnApprove" onclick="updateStatus('approved')">✓ Approve</button>
         <button class="action-btn btn-decline" id="btnDecline" onclick="updateStatus('declined')">✕ Decline</button>
         <button class="action-btn btn-refund" id="btnRefund" onclick="updateStatus('refunded')">↩ Refund</button>
+        <button class="action-btn btn-delete" id="btnDelete" onclick="deleteBooking()">🗑 Delete</button>
         <p class="action-status-msg" id="actionMsg"></p>
       </div>
     </div>
@@ -1016,6 +1023,30 @@
         msg.textContent = 'Failed to update. Try again.';
         msg.style.color = 'var(--declined)';
         btns.forEach(b => b.disabled = false);
+      }
+    }
+
+    async function deleteBooking() {
+      if (!currentDocId || !window._db) return;
+      if (!confirm('Are you sure you want to PERMANENTLY delete this booking? This cannot be undone.')) return;
+
+      const { doc, deleteDoc } = window._fbAdmin;
+      const msg = document.getElementById('actionMsg');
+      msg.style.display = 'block';
+      msg.textContent = 'Deleting…';
+      msg.style.color = 'var(--declined)';
+
+      try {
+        await deleteDoc(doc(window._db, 'bookings', currentDocId));
+        // remove from local list
+        allBookings = allBookings.filter(b => b._id !== currentDocId);
+        updateStats();
+        renderTable();
+        closeDetail();
+        alert('Booking deleted successfully.');
+      } catch (e) {
+        msg.textContent = 'Failed to delete. Try again.';
+        console.error(e);
       }
     }
 

@@ -1826,16 +1826,55 @@ function handlePromoOverlayClick(e) {
 
 /* success */
 .bk-success {
-  text-align: center; padding: 20px 10px;
-  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  text-align: center; padding: 30px 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  animation: bkFadeUp 0.6s ease-out;
 }
-.bk-success-icon { font-size: 48px; }
+@keyframes bkFadeUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.bk-success-icon { 
+  font-size: 54px; 
+  background: #f0fdf4; width: 80px; height: 80px; 
+  display: flex; align-items: center; justify-content: center; 
+  border-radius: 50%; margin-bottom: 8px;
+}
 .bk-success h4 {
   font-family: 'Playfair Display', serif;
-  font-size: 22px; color: var(--bark); font-weight: 400;
+  font-size: 24px; color: var(--bark); font-weight: 400;
+  margin-bottom: 4px;
 }
-.bk-success p { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 320px; }
-.bk-ref { font-size: 11px; letter-spacing: 0.1em; color: var(--ocean); margin-top: 4px; }
+.bk-success p { font-size: 14px; color: var(--muted); line-height: 1.6; max-width: 340px; }
+.bk-ref-box {
+  margin-top: 14px;
+  padding: 12px 24px;
+  background: var(--sand);
+  border: 1px dashed var(--ocean);
+  border-radius: 12px;
+  text-align: center;
+}
+.bk-ref-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 4px; }
+.bk-ref-code { font-family: monospace; font-size: 18px; font-weight: bold; color: var(--ocean); }
+
+/* button loading state */
+.bk-btn.is-loading {
+  color: transparent !important;
+  position: relative;
+  pointer-events: none;
+}
+.bk-btn.is-loading::after {
+  content: "";
+  position: absolute;
+  width: 16px; height: 16px;
+  top: 50%; left: 50%;
+  margin: -8px 0 0 -8px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: bk-spin 0.6s linear infinite;
+}
+@keyframes bk-spin { to { transform: rotate(360deg); } }
 
 /* buttons */
 .bk-footer {
@@ -1955,10 +1994,14 @@ function handlePromoOverlayClick(e) {
       <!-- SUCCESS -->
       <div class="bk-step" id="bkStepDone">
         <div class="bk-success">
-          <div class="bk-success-icon">✅</div>
+          <div class="bk-success-icon">✨</div>
           <h4>Booking Submitted!</h4>
-          <p>Your booking is now <strong>pending review</strong>. We'll confirm once your payment is verified. Expect a WhatsApp message from us shortly.</p>
-          <p class="bk-ref" id="bkRefCode"></p>
+          <p>Your reservation is now <strong>pending review</strong>. We'll verify your payment and message you on WhatsApp shortly.</p>
+          
+          <div class="bk-ref-box">
+            <div class="bk-ref-label">Reference Number</div>
+            <div class="bk-ref-code" id="bkRefCode">BK-000000</div>
+          </div>
         </div>
       </div>
 
@@ -2106,7 +2149,7 @@ function onPaymentMethodChange() {
           <span style="background: #007bff; color: #fff; width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px;">G</span> 
           Bank Details
         </p>
-        <p style="margin: 2px 0;">Account Name: <strong>DICEGENNA C GUERRERO</strong></p>
+        <p style="margin: 2px 0;">Account Name: <strong>Casobe Beach Resort</strong></p>
         <p style="margin: 2px 0;">Account Number: <strong>5516035414</strong></p>
         <p style="margin: 2px 0;">Bank Name: <strong>LANDBANK</strong></p>
       </div>
@@ -2172,8 +2215,8 @@ function onFileSelect(e) {
 
 async function submitBooking() {
   const btn = document.getElementById('bkNextBtn');
+  btn.classList.add('is-loading');
   btn.disabled = true;
-  btn.textContent = 'Submitting…';
   try {
     const { collection, addDoc, ref, uploadBytes, getDownloadURL } = window._fbModules;
     // compress image before upload
@@ -2215,13 +2258,14 @@ async function submitBooking() {
       submittedAt: new Date().toISOString(),
     };
     await addDoc(collection(window._db, 'bookings'), booking);
-    document.getElementById('bkRefCode').textContent = 'Reference: ' + refCode;
+    document.getElementById('bkRefCode').textContent = refCode;
+    document.getElementById('bkFooter').style.display = 'none';
     bkShowStep(4);
   } catch(err) {
     console.error(err);
     showBkErr('bkErr3', 'Submission failed. Please check your connection and try again.');
+    btn.classList.remove('is-loading');
     btn.disabled = false;
-    btn.textContent = 'Submit Booking';
   }
 }
 
