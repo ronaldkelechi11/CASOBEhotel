@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Lost in Paradise | Casobe Beach Resort</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --sand: #f4ede3;
+            --bark: #3a2e24;
+            --ocean: #3b7d6e;
+            --ocean-light: #5aa898;
+            --white: #fdfaf7;
+            --text: #2a1f18;
+        }
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bark);
+            color: var(--sand);
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            background: url('bgimgfordesktopview.jpg') center/cover no-repeat;
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(15, 25, 20, 0.7) 0%,
+                rgba(15, 25, 20, 0.85) 100%
+            );
+            z-index: 1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            max-width: 600px;
+            animation: fadeIn 1.2s ease-out;
+        }
+
+        .error-code {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(100px, 15vw, 180px);
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 10px;
+            color: var(--sand);
+            opacity: 0.9;
+        }
+
+        .error-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(24px, 5vw, 42px);
+            font-style: italic;
+            margin-bottom: 20px;
+            color: #8fcfc0;
+        }
+
+        .error-message {
+            font-size: 16px;
+            font-weight: 300;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            color: rgba(244, 237, 227, 0.7);
+        }
+
+        .back-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--ocean);
+            color: var(--white);
+            text-decoration: none;
+            padding: 16px 36px;
+            border-radius: 40px;
+            font-size: 13px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .back-home:hover {
+            background: #2d6458;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            letter-spacing: 0.1em;
+            color: var(--sand);
+            text-decoration: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Decorative elements */
+        .decoration {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .leaf {
+            position: absolute;
+            opacity: 0.1;
+            filter: invert(1);
+        }
+
+        .leaf-1 { top: 10%; left: 5%; width: 200px; transform: rotate(-15deg); }
+        .leaf-2 { bottom: 10%; right: 5%; width: 250px; transform: rotate(165deg); }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="overlay"></div>
+        
+        <a href="/" class="logo">CASOBE BEACH RESORT</a>
+
+        <div class="content">
+            <div class="error-code">404</div>
+            <h1 class="error-title">Lost in Paradise?</h1>
+            <p class="error-message">
+                It seems the page you are looking for has wandered off to the shore. 
+                Don't worry, even the best travelers lose their way sometimes.
+            </p>
+            <a href="/" class="back-home">
+                Return to Serenity
+            </a>
+        </div>
+
+        <div class="decoration">
+            <!-- Simplified leaf shapes or SVG could go here for more "wow" factor -->
+            <svg class="leaf leaf-1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 0 C60 30 90 40 100 50 C90 60 60 70 50 100 C40 70 10 60 0 50 C10 40 40 30 50 0" fill="currentColor"/>
+            </svg>
+            <svg class="leaf leaf-2" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 0 C60 30 90 40 100 50 C90 60 60 70 50 100 C40 70 10 60 0 50 C10 40 40 30 50 0" fill="currentColor"/>
+            </svg>
+        </div>
+    </div>
+</body>
+</html>
