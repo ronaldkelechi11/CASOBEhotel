@@ -992,14 +992,15 @@ footer .copy {
   import { getFirestore, collection, addDoc, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-  // ── REPLACE WITH YOUR FIREBASE CONFIG ──
+  // ── FIREBASE CONFIG ──
   const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyBKmTOl7lW7RUd7GZpQzsNtBJxbKcKP-UA",
+    authDomain: "casobehotel.firebaseapp.com",
+    projectId: "casobehotel",
+    storageBucket: "casobehotel.firebasestorage.app",
+    messagingSenderId: "204672655696",
+    appId: "1:204672655696:web:d1f28a134656f5ec464c55",
+    measurementId: "G-XY0XSL7GPR"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -2175,11 +2176,17 @@ async function submitBooking() {
   btn.textContent = 'Submitting…';
   try {
     const { collection, addDoc, ref, uploadBytes, getDownloadURL } = window._fbModules;
-    // upload screenshot
-    const ext = bkSelectedFile.name.split('.').pop();
+    // compress image before upload
+    let uploadFile = bkSelectedFile;
+    try {
+      const compressed = await compressImage(bkSelectedFile);
+      uploadFile = compressed;
+    } catch(e) { console.warn('Compression failed, uploading original', e); }
+
+    const ext = uploadFile.name.split('.').pop();
     const refCode = 'BK-' + Date.now();
     const storageRef = ref(window._storage, `payments/${refCode}.${ext}`);
-    await uploadBytes(storageRef, bkSelectedFile);
+    await uploadBytes(storageRef, uploadFile);
     const screenshotURL = await getDownloadURL(storageRef);
     // save booking
     const ci = document.getElementById('bkCheckin').value;
@@ -2216,6 +2223,34 @@ async function submitBooking() {
     btn.disabled = false;
     btn.textContent = 'Submit Booking';
   }
+}
+
+async function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = ev => {
+      const img = new Image();
+      img.src = ev.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const max = 1200; // max dimension
+        if (width > height && width > max) { height *= max/width; width = max; }
+        else if (height > max) { width *= max/height; height = max; }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(blob => {
+          resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+        }, 'image/jpeg', 0.7); // 70% quality
+      };
+      img.onerror = reject;
+    };
+    reader.onerror = reject;
+  });
 }
 
 function showBkErr(id, msg) {
