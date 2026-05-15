@@ -2147,9 +2147,9 @@ function onPaymentMethodChange() {
   const uploadText = document.querySelector('.bk-upload-text strong');
   
   if (bkPaymentSettings) {
-    const name = bkPaymentSettings.methodName || 'GCash';
-    const accName = bkPaymentSettings.accountName || 'Gerardine Zamudio';
-    const accNum = bkPaymentSettings.accountNumber || '0956 640 4092';
+    const name = bkPaymentSettings.methodName;
+    const accName = bkPaymentSettings.accountName;
+    const accNum = bkPaymentSettings.accountNumber;
     const instr = bkPaymentSettings.instructions || '';
     
     details.innerHTML = `
@@ -2174,15 +2174,9 @@ function onPaymentMethodChange() {
       select.innerHTML = `<option value="${name}">${name}</option>`;
     }
   } else {
-    // Fallback if settings not loaded yet
     details.innerHTML = `
-      <div style="background: #f0f7ff; border: 1px solid #cce3ff; border-radius: 10px; padding: 14px; margin-top: 10px; font-size: 13px;">
-        <p style="color: #007bff; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-          <span style="background: #007bff; color: #fff; width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px;">G</span> 
-          GCash Details
-        </p>
-        <p style="margin: 2px 0;">Account Name: <strong>Gerardine Zamudio</strong></p>
-        <p style="margin: 2px 0;">Account Number: <strong>0956 640 4092</strong></p>
+      <div style="padding: 20px; text-align: center; color: var(--muted); font-size: 13px;">
+        Loading payment details...
       </div>
     `;
   }

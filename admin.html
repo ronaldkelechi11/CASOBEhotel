@@ -12,7 +12,7 @@
   <!-- Firebase SDK — same config as index.html -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, orderBy, query, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     // ── SAME FIREBASE CONFIG AS index.html ──
@@ -31,7 +31,7 @@
     const auth = getAuth(app);
 
     window._db = db;
-    window._fbAdmin = { collection, getDocs, doc, updateDoc, deleteDoc, orderBy, query };
+    window._fbAdmin = { collection, getDocs, doc, updateDoc, deleteDoc, orderBy, query, getDoc, setDoc };
 
     // ── Auth state listener ──
     // Automatically shows dashboard if already logged in, login screen if not
@@ -777,6 +777,70 @@
       color: var(--muted);
       font-size: 14px;
     }
+
+    /* ── MOBILE RESPONSIVENESS ── */
+    @media (max-width: 768px) {
+      .adm-nav {
+        padding: 0 16px;
+      }
+      .adm-nav-logo span {
+        display: none;
+      }
+      .adm-body {
+        padding: 16px;
+      }
+      .adm-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .stat-card {
+        padding: 12px;
+      }
+      .stat-card .stat-val {
+        font-size: 22px;
+      }
+      .adm-tabs {
+        gap: 20px;
+      }
+      .adm-tab {
+        font-size: 13px;
+      }
+      .settings-card {
+        grid-template-columns: 1fr !important;
+        gap: 24px !important;
+        padding: 20px !important;
+      }
+      .settings-card div:last-child {
+        position: static !important;
+      }
+      .adm-table th:nth-child(4), 
+      .adm-table td:nth-child(4),
+      .adm-table th:nth-child(5), 
+      .adm-table td:nth-child(5),
+      .adm-table th:nth-child(6), 
+      .adm-table td:nth-child(6) {
+        display: none;
+      }
+      .adm-table td {
+        padding: 12px 8px;
+        font-size: 12px;
+      }
+      .adm-table .dates {
+        font-size: 11px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .adm-stats {
+        grid-template-columns: 1fr;
+      }
+      .adm-filters {
+        gap: 6px;
+      }
+      .filter-btn {
+        padding: 6px 12px;
+        font-size: 10px;
+      }
+    }
   </style>
 </head>
 
@@ -819,7 +883,7 @@
       <!-- Tabs -->
       <div class="adm-tabs">
         <div class="adm-tab active" onclick="showView('bookings', this)">Bookings</div>
-        <div class="adm-tab" onclick="showView('payment-settings', this)">Payment Settings</div>
+        <div class="adm-tab" onclick="showView('paymentSettings', this)">Payment Settings</div>
       </div>
 
       <!-- Bookings View -->
@@ -866,32 +930,48 @@
 
       <!-- Payment Settings View -->
       <div id="paymentSettingsView" class="adm-view">
-        <div class="settings-card">
-          <h2>Payment Method Details</h2>
-          <p>These details will be displayed to users when they book a room.</p>
-          
-          <div class="settings-field">
-            <label>Payment Method Name</label>
-            <input type="text" id="setMethodName" placeholder="e.g. GCash">
+        <div class="settings-card" id="settingsCardGrid" style="max-width: 800px; display: grid; grid-template-columns: 1fr 300px; gap: 32px; align-items: start;">
+          <div>
+            <h2>Payment Method Details</h2>
+            <p>These details will be displayed to users when they book a room.</p>
+            
+            <div class="settings-field">
+              <label>Payment Method Name</label>
+              <input type="text" id="setMethodName" placeholder="e.g. GCash" oninput="updatePreview()">
+            </div>
+            
+            <div class="settings-field">
+              <label>Account Name</label>
+              <input type="text" id="setAccountName" placeholder="Full name on the account" oninput="updatePreview()">
+            </div>
+            
+            <div class="settings-field">
+              <label>Account Number</label>
+              <input type="text" id="setAccountNumber" placeholder="Account or Phone number" oninput="updatePreview()">
+            </div>
+            
+            <div class="settings-field">
+              <label>Instructions (Optional)</label>
+              <textarea id="setInstructions" rows="3" placeholder="Any special instructions for the user..." oninput="updatePreview()"></textarea>
+            </div>
+            
+            <button class="settings-save-btn" id="saveSettingsBtn" onclick="savePaymentSettings()">Save Settings</button>
+            <p id="settingsMsg" style="margin-top:12px; font-size:13px; display:none;"></p>
           </div>
-          
-          <div class="settings-field">
-            <label>Account Name</label>
-            <input type="text" id="setAccountName" placeholder="Full name on the account">
+
+          <div style="position: sticky; top: 0;">
+            <label style="font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 12px;">Live Preview (What Users See)</label>
+            <div id="paymentPreview" style="background: #f0f7ff; border: 1px solid #cce3ff; border-radius: 12px; padding: 16px; font-size: 13px; box-shadow: 0 4px 12px rgba(0,123,255,0.05);">
+              <p style="color: #007bff; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                <span id="prevIcon" style="background: #007bff; color: #fff; width: 20px; height: 20px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px;">G</span> 
+                <span id="prevName">GCash</span> Details
+              </p>
+              <p style="margin: 4px 0;">Account Name: <strong id="prevAccName">Gerardine Zamudio</strong></p>
+              <p style="margin: 4px 0;">Account Number: <strong id="prevAccNum">0956 640 4092</strong></p>
+              <p id="prevInstr" style="margin: 10px 0 0; color:var(--muted); font-style:italic; line-height:1.4; border-top: 1px solid #cce3ff; padding-top: 8px;">Please send the exact amount.</p>
+            </div>
+            <p style="font-size: 11px; color: var(--muted); margin-top: 12px; line-height: 1.5;">This box shows exactly how the information appears in the user's booking modal.</p>
           </div>
-          
-          <div class="settings-field">
-            <label>Account Number</label>
-            <input type="text" id="setAccountNumber" placeholder="Account or Phone number">
-          </div>
-          
-          <div class="settings-field">
-            <label>Instructions (Optional)</label>
-            <textarea id="setInstructions" rows="3" placeholder="Any special instructions for the user..."></textarea>
-          </div>
-          
-          <button class="settings-save-btn" id="saveSettingsBtn" onclick="savePaymentSettings()">Save Settings</button>
-          <p id="settingsMsg" style="margin-top:12px; font-size:13px; display:none;"></p>
         </div>
       </div>
     </div>
@@ -1019,13 +1099,19 @@
 
     // ── Views / Tabs ──
     function showView(viewId, tab) {
+      const targetView = document.getElementById(viewId + 'View');
+      if (!targetView) {
+        console.error('View not found:', viewId + 'View');
+        return;
+      }
+
       document.querySelectorAll('.adm-view').forEach(v => v.classList.remove('active'));
       document.querySelectorAll('.adm-tab').forEach(t => t.classList.remove('active'));
       
-      document.getElementById(viewId + 'View').classList.add('active');
+      targetView.classList.add('active');
       tab.classList.add('active');
 
-      if (viewId === 'payment-settings') {
+      if (viewId === 'paymentSettings') {
         loadPaymentSettings();
       }
     }
@@ -1228,7 +1314,7 @@
     // ── Payment Settings ──
     async function loadPaymentSettings() {
       if (!window._db) return;
-      const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      const { doc, getDoc } = window._fbAdmin;
       try {
         const docRef = doc(window._db, 'settings', 'paymentMethods');
         const snap = await getDoc(docRef);
@@ -1238,15 +1324,36 @@
           document.getElementById('setAccountName').value = data.accountName || '';
           document.getElementById('setAccountNumber').value = data.accountNumber || '';
           document.getElementById('setInstructions').value = data.instructions || '';
+          updatePreview();
         }
       } catch (e) {
         console.error('Error loading settings:', e);
       }
     }
 
+    function updatePreview() {
+      const name = document.getElementById('setMethodName').value || 'Payment';
+      const accName = document.getElementById('setAccountName').value || '—';
+      const accNum = document.getElementById('setAccountNumber').value || '—';
+      const instr = document.getElementById('setInstructions').value || '';
+
+      document.getElementById('prevName').textContent = name;
+      document.getElementById('prevIcon').textContent = name.charAt(0).toUpperCase();
+      document.getElementById('prevAccName').textContent = accName;
+      document.getElementById('prevAccNum').textContent = accNum;
+      
+      const instrEl = document.getElementById('prevInstr');
+      if (instr) {
+        instrEl.textContent = instr;
+        instrEl.style.display = 'block';
+      } else {
+        instrEl.style.display = 'none';
+      }
+    }
+
     async function savePaymentSettings() {
       if (!window._db) return;
-      const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      const { doc, setDoc } = window._fbAdmin;
       
       const name = document.getElementById('setMethodName').value.trim();
       const accName = document.getElementById('setAccountName').value.trim();
