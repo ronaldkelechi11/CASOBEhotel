@@ -989,7 +989,7 @@ footer .copy {
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
   // ── FIREBASE CONFIG ──
@@ -1010,7 +1010,7 @@ footer .copy {
   // expose to global scope
   window._db = db;
   window._storage = storage;
-  window._fbModules = { collection, addDoc, getDocs, query, where, orderBy, ref, uploadBytes, getDownloadURL };
+  window._fbModules = { collection, addDoc, getDocs, query, where, orderBy, getDoc, doc, ref, uploadBytes, getDownloadURL };
 </script>
 </head>
 <body>
@@ -2021,6 +2021,7 @@ let bkCurrentStep = 1;
 let bkRoomKey = null;
 let bkBookedDates = []; // [{checkin, checkout, status}]
 let bkSelectedFile = null;
+let bkPaymentSettings = null;
 
 // Single nightly rate per room — update these when client confirms final pricing
 const ROOM_PRICES = {
@@ -2053,6 +2054,7 @@ function openBooking(roomKey) {
   document.body.style.overflow = 'hidden';
   // load existing bookings for this room
   loadRoomBookings(roomKey);
+  loadPaymentSettings();
 }
 
 function closeBooking() {
@@ -2127,18 +2129,63 @@ function buildPaymentInfo() {
   onPaymentMethodChange(); // update details box
 }
 
+async function loadPaymentSettings() {
+  if (!window._db) return;
+  try {
+    const { doc, getDoc } = window._fbModules;
+    const docRef = doc(window._db, 'settings', 'paymentMethods');
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      bkPaymentSettings = snap.data();
+      onPaymentMethodChange(); // Update UI if settings load after step 3 is reached
+    }
+  } catch(e) { console.warn('Could not load payment settings', e); }
+}
+
 function onPaymentMethodChange() {
   const details = document.getElementById('bkMethodDetails');
-  details.innerHTML = `
-    <div style="background: #f0f7ff; border: 1px solid #cce3ff; border-radius: 10px; padding: 14px; margin-top: 10px; font-size: 13px;">
-      <p style="color: #007bff; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-        <span style="background: #007bff; color: #fff; width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px;">G</span> 
-        GCash Details
-      </p>
-      <p style="margin: 2px 0;">Account Name: <strong>Gerardine Zamudio</strong></p>
-      <p style="margin: 2px 0;">Account Number: <strong>0956 640 4092</strong></p>
-    </div>
-  `;
+  const uploadText = document.querySelector('.bk-upload-text strong');
+  
+  if (bkPaymentSettings) {
+    const name = bkPaymentSettings.methodName || 'GCash';
+    const accName = bkPaymentSettings.accountName || 'Gerardine Zamudio';
+    const accNum = bkPaymentSettings.accountNumber || '0956 640 4092';
+    const instr = bkPaymentSettings.instructions || '';
+    
+    details.innerHTML = `
+      <div style="background: #f0f7ff; border: 1px solid #cce3ff; border-radius: 10px; padding: 14px; margin-top: 10px; font-size: 13px;">
+        <p style="color: #007bff; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+          <span style="background: #007bff; color: #fff; width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px;">${name.charAt(0)}</span> 
+          ${name} Details
+        </p>
+        <p style="margin: 2px 0;">Account Name: <strong>${accName}</strong></p>
+        <p style="margin: 2px 0;">Account Number: <strong>${accNum}</strong></p>
+        ${instr ? `<p style="margin: 8px 0 0; color:var(--muted); font-style:italic;">${instr}</p>` : ''}
+      </div>
+    `;
+    
+    if (uploadText) {
+      uploadText.textContent = `${name} payment receipt`;
+    }
+    
+    // Update the hidden select value if needed
+    const select = document.getElementById('bkPaymentMethod');
+    if (select) {
+      select.innerHTML = `<option value="${name}">${name}</option>`;
+    }
+  } else {
+    // Fallback if settings not loaded yet
+    details.innerHTML = `
+      <div style="background: #f0f7ff; border: 1px solid #cce3ff; border-radius: 10px; padding: 14px; margin-top: 10px; font-size: 13px;">
+        <p style="color: #007bff; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+          <span style="background: #007bff; color: #fff; width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px;">G</span> 
+          GCash Details
+        </p>
+        <p style="margin: 2px 0;">Account Name: <strong>Gerardine Zamudio</strong></p>
+        <p style="margin: 2px 0;">Account Number: <strong>0956 640 4092</strong></p>
+      </div>
+    `;
+  }
 }
 
 function datesOverlap(ci, co) {

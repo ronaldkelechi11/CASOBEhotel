@@ -233,6 +233,123 @@
       margin: 0 auto;
     }
 
+    /* ── TABS ── */
+    .adm-tabs {
+      display: flex;
+      gap: 32px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      padding: 0 4px;
+    }
+
+    .adm-tab {
+      padding: 12px 0;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .adm-tab:hover {
+      color: var(--bark);
+    }
+
+    .adm-tab.active {
+      color: var(--ocean);
+    }
+
+    .adm-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--ocean);
+    }
+
+    .adm-view {
+      display: none;
+    }
+
+    .adm-view.active {
+      display: block;
+    }
+
+    /* ── PAYMENT SETTINGS ── */
+    .settings-card {
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 28px;
+      max-width: 600px;
+    }
+
+    .settings-card h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 400;
+      margin-bottom: 8px;
+    }
+
+    .settings-card p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .settings-field {
+      margin-bottom: 20px;
+    }
+
+    .settings-field label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .settings-field input,
+    .settings-field textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .settings-field input:focus,
+    .settings-field textarea:focus {
+      border-color: var(--ocean);
+    }
+
+    .settings-save-btn {
+      background: var(--ocean);
+      color: #fff;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .settings-save-btn:hover {
+      background: #2d6458;
+    }
+
+    .settings-save-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     /* stats bar */
     .adm-stats {
       display: grid;
@@ -699,43 +816,83 @@
     </nav>
 
     <div class="adm-body">
-      <!-- Stats -->
-      <div class="adm-stats">
-        <div class="stat-card">
-          <div class="stat-val" id="statTotal">—</div>
-          <div class="stat-label">Total Bookings</div>
+      <!-- Tabs -->
+      <div class="adm-tabs">
+        <div class="adm-tab active" onclick="showView('bookings', this)">Bookings</div>
+        <div class="adm-tab" onclick="showView('payment-settings', this)">Payment Settings</div>
+      </div>
+
+      <!-- Bookings View -->
+      <div id="bookingsView" class="adm-view active">
+        <!-- Stats -->
+        <div class="adm-stats">
+          <div class="stat-card">
+            <div class="stat-val" id="statTotal">—</div>
+            <div class="stat-label">Total Bookings</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" style="color:var(--pending)" id="statPending">—</div>
+            <div class="stat-label">Pending Review</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" style="color:var(--approved)" id="statApproved">—</div>
+            <div class="stat-label">Approved</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" style="color:var(--declined)" id="statDeclined">—</div>
+            <div class="stat-label">Declined</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" style="color:var(--refunded)" id="statRefunded">—</div>
+            <div class="stat-label">Refunded</div>
+          </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-val" style="color:var(--pending)" id="statPending">—</div>
-          <div class="stat-label">Pending Review</div>
+
+        <!-- Filters -->
+        <div class="adm-filters">
+          <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+          <button class="filter-btn" onclick="setFilter('pending', this)">Pending</button>
+          <button class="filter-btn" onclick="setFilter('approved', this)">Approved</button>
+          <button class="filter-btn" onclick="setFilter('declined', this)">Declined</button>
+          <button class="filter-btn" onclick="setFilter('refunded', this)">Refunded</button>
+          <button class="adm-refresh" onclick="loadBookings()">↻ Refresh</button>
         </div>
-        <div class="stat-card">
-          <div class="stat-val" style="color:var(--approved)" id="statApproved">—</div>
-          <div class="stat-label">Approved</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-val" style="color:var(--declined)" id="statDeclined">—</div>
-          <div class="stat-label">Declined</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-val" style="color:var(--refunded)" id="statRefunded">—</div>
-          <div class="stat-label">Refunded</div>
+
+        <!-- Table -->
+        <div class="adm-table-wrap" id="tableWrap">
+          <div class="adm-loading">Loading bookings…</div>
         </div>
       </div>
 
-      <!-- Filters -->
-      <div class="adm-filters">
-        <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
-        <button class="filter-btn" onclick="setFilter('pending', this)">Pending</button>
-        <button class="filter-btn" onclick="setFilter('approved', this)">Approved</button>
-        <button class="filter-btn" onclick="setFilter('declined', this)">Declined</button>
-        <button class="filter-btn" onclick="setFilter('refunded', this)">Refunded</button>
-        <button class="adm-refresh" onclick="loadBookings()">↻ Refresh</button>
-      </div>
-
-      <!-- Table -->
-      <div class="adm-table-wrap" id="tableWrap">
-        <div class="adm-loading">Loading bookings…</div>
+      <!-- Payment Settings View -->
+      <div id="paymentSettingsView" class="adm-view">
+        <div class="settings-card">
+          <h2>Payment Method Details</h2>
+          <p>These details will be displayed to users when they book a room.</p>
+          
+          <div class="settings-field">
+            <label>Payment Method Name</label>
+            <input type="text" id="setMethodName" placeholder="e.g. GCash">
+          </div>
+          
+          <div class="settings-field">
+            <label>Account Name</label>
+            <input type="text" id="setAccountName" placeholder="Full name on the account">
+          </div>
+          
+          <div class="settings-field">
+            <label>Account Number</label>
+            <input type="text" id="setAccountNumber" placeholder="Account or Phone number">
+          </div>
+          
+          <div class="settings-field">
+            <label>Instructions (Optional)</label>
+            <textarea id="setInstructions" rows="3" placeholder="Any special instructions for the user..."></textarea>
+          </div>
+          
+          <button class="settings-save-btn" id="saveSettingsBtn" onclick="savePaymentSettings()">Save Settings</button>
+          <p id="settingsMsg" style="margin-top:12px; font-size:13px; display:none;"></p>
+        </div>
       </div>
     </div>
   </div>
@@ -858,6 +1015,19 @@
     async function doLogout() {
       await window._signOut();
       // onAuthStateChanged will handle showing login screen
+    }
+
+    // ── Views / Tabs ──
+    function showView(viewId, tab) {
+      document.querySelectorAll('.adm-view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.adm-tab').forEach(t => t.classList.remove('active'));
+      
+      document.getElementById(viewId + 'View').classList.add('active');
+      tab.classList.add('active');
+
+      if (viewId === 'payment-settings') {
+        loadPaymentSettings();
+      }
     }
 
     // ── Wait for Firebase ──
@@ -1053,6 +1223,68 @@
     function zoomImg(src) {
       document.getElementById('imgZoomSrc').src = src;
       document.getElementById('imgZoom').classList.add('open');
+    }
+
+    // ── Payment Settings ──
+    async function loadPaymentSettings() {
+      if (!window._db) return;
+      const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      try {
+        const docRef = doc(window._db, 'settings', 'paymentMethods');
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          document.getElementById('setMethodName').value = data.methodName || '';
+          document.getElementById('setAccountName').value = data.accountName || '';
+          document.getElementById('setAccountNumber').value = data.accountNumber || '';
+          document.getElementById('setInstructions').value = data.instructions || '';
+        }
+      } catch (e) {
+        console.error('Error loading settings:', e);
+      }
+    }
+
+    async function savePaymentSettings() {
+      if (!window._db) return;
+      const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+      
+      const name = document.getElementById('setMethodName').value.trim();
+      const accName = document.getElementById('setAccountName').value.trim();
+      const accNum = document.getElementById('setAccountNumber').value.trim();
+      const instr = document.getElementById('setInstructions').value.trim();
+      
+      if (!name || !accName || !accNum) {
+        alert('Please fill in Method Name, Account Name, and Account Number.');
+        return;
+      }
+
+      const btn = document.getElementById('saveSettingsBtn');
+      const msg = document.getElementById('settingsMsg');
+      
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+      msg.style.display = 'none';
+
+      try {
+        await setDoc(doc(window._db, 'settings', 'paymentMethods'), {
+          methodName: name,
+          accountName: accName,
+          accountNumber: accNum,
+          instructions: instr,
+          updatedAt: new Date().toISOString()
+        });
+        
+        msg.textContent = '✓ Settings saved successfully!';
+        msg.style.color = 'var(--approved)';
+        msg.style.display = 'block';
+      } catch (e) {
+        msg.textContent = 'Error saving settings: ' + e.message;
+        msg.style.color = 'var(--declined)';
+        msg.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save Settings';
+      }
     }
 
     // ── Helpers ──
